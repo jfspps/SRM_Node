@@ -1,9 +1,5 @@
 use linq;
 
-insert into form_group(teacher_id, student_id) values
-(1, 1), (1,3), (1,5), (1,7),
-(2,2), (2,4), (2,6);
-
 SELECT 
     *
 FROM

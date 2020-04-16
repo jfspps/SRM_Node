@@ -1,8 +1,5 @@
 use linq;
 
-insert into subjects_teachers_group(subject_class_name, subject_id, teacher_id) values
-('Mathtastic', 1, 2), ('Englooosh', 2, 1);
-
 SELECT 
     *
 FROM
@@ -10,6 +7,7 @@ FROM
 
 -- this lists teachers and the subjects they teach:
 SELECT 
+	idSubjects_Teachers_group,
     subject_title,
     subject_class_name,
     teacher_fname,
