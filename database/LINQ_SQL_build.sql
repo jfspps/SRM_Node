@@ -24,6 +24,7 @@ CREATE TABLE IF NOT EXISTS `LINQ`.`Students` (
   `Student_mid_initials` VARCHAR(10) NULL,
   `Student_email` VARCHAR(45) NULL,
   `Student_phone` VARCHAR(20) NULL COMMENT 'ITU recommendation of 15 digits',
+  `Year_group` VARCHAR(5) NULL,
   PRIMARY KEY (`idStudents`),
   UNIQUE INDEX `Student_id_UNIQUE` (`idStudents` ASC) VISIBLE)
 ENGINE = InnoDB;
@@ -106,11 +107,13 @@ ENGINE = InnoDB;
 -- Table `LINQ`.`Academic_class`
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `LINQ`.`Academic_class` (
+  `idAcademic_class` INT NOT NULL AUTO_INCREMENT,
   `Student_id` INT NOT NULL,
   `Subjects_Teachers_group_id` INT NOT NULL COMMENT 'This junction could be used to list the students a subject teacher teaches, or vice versa.',
   INDEX `fk_Subjects_Teachers_group_has_Students_Students1_idx` (`Student_id` ASC) VISIBLE,
   INDEX `fk_Subjects_Teachers_group_has_Students_Subjects_Teachers_g_idx` (`Subjects_Teachers_group_id` ASC) VISIBLE,
-  PRIMARY KEY (`Student_id`, `Subjects_Teachers_group_id`),
+  PRIMARY KEY (`idAcademic_class`),
+  UNIQUE INDEX `idAcademic_class_UNIQUE` (`idAcademic_class` ASC) VISIBLE,
   CONSTRAINT `fk_Subjects_Teachers_group_has_Students_Subjects_Teachers_gro1`
     FOREIGN KEY (`Subjects_Teachers_group_id`)
     REFERENCES `LINQ`.`Subjects_Teachers_group` (`idSubjects_Teachers_group`)
@@ -128,11 +131,13 @@ ENGINE = InnoDB;
 -- Table `LINQ`.`Form_group`
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `LINQ`.`Form_group` (
+  `idForm_group` INT NOT NULL AUTO_INCREMENT,
   `Student_id` INT NOT NULL,
   `Teacher_id` INT NOT NULL COMMENT 'This junction could be used to list the students a form tutor is responsible for, or vice versa.',
   INDEX `fk_Teachers_has_Students_Students1_idx` (`Student_id` ASC) VISIBLE,
   INDEX `fk_Teachers_has_Students_Teachers1_idx` (`Teacher_id` ASC) VISIBLE,
-  PRIMARY KEY (`Student_id`, `Teacher_id`),
+  PRIMARY KEY (`idForm_group`),
+  UNIQUE INDEX `idForm_group_UNIQUE` (`idForm_group` ASC) VISIBLE,
   CONSTRAINT `Teacher_id_form_group`
     FOREIGN KEY (`Teacher_id`)
     REFERENCES `LINQ`.`Teachers` (`idTeachers`)
@@ -155,6 +160,7 @@ CREATE TABLE IF NOT EXISTS `LINQ`.`Assignments_info` (
   `Assignment_info` VARCHAR(100) NULL,
   `Max_raw_score` INT NOT NULL DEFAULT 100,
   `Type_of_assessment` CHAR NOT NULL,
+  `Assignment_instructions` VARCHAR(200) NULL,
   PRIMARY KEY (`idAssignments_info`),
   UNIQUE INDEX `idAssignments_UNIQUE` (`idAssignments_info` ASC) VISIBLE)
 ENGINE = InnoDB;
@@ -214,27 +220,11 @@ ENGINE = InnoDB;
 
 
 -- -----------------------------------------------------
--- Table `LINQ`.`Grading_groups`
--- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `LINQ`.`Grading_groups` (
-  `idGrading_groups` INT NOT NULL AUTO_INCREMENT,
-  `Assignments_id` INT NOT NULL,
-  PRIMARY KEY (`idGrading_groups`, `Assignments_id`),
-  UNIQUE INDEX `idLetter_grade_groups_UNIQUE` (`idGrading_groups` ASC) VISIBLE,
-  INDEX `Assignment_id_threshold_idx` (`Assignments_id` ASC) VISIBLE,
-  CONSTRAINT `Assignment_id_threshold`
-    FOREIGN KEY (`Assignments_id`)
-    REFERENCES `LINQ`.`Assignments_info` (`idAssignments_info`)
-    ON DELETE NO ACTION
-    ON UPDATE NO ACTION)
-ENGINE = InnoDB;
-
-
--- -----------------------------------------------------
 -- Table `LINQ`.`Grade_thresholds`
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `LINQ`.`Grade_thresholds` (
   `idGrade_thresholds` INT NOT NULL AUTO_INCREMENT COMMENT 'If grade thresholds exist, then a group must have been instantiated. The thresholds might apply to different assignments (papers of the same type, or, use of Cambridge\'s PUM). If a grading group exists then there must be numerical thresholds in mind. Hence the identifying relationship.',
+  `Threshold_notes` VARCHAR(100) NULL,
   `Highest_raw_threshold` INT NOT NULL,
   `High1_raw` INT NULL,
   `High2_raw` INT NULL,
@@ -255,15 +245,8 @@ CREATE TABLE IF NOT EXISTS `LINQ`.`Grade_thresholds` (
   `High17_raw` INT NULL,
   `High18_raw` INT NULL,
   `Lowest_raw` INT NOT NULL DEFAULT 0,
-  `Grading_group_id` INT NOT NULL,
-  PRIMARY KEY (`idGrade_thresholds`, `Grading_group_id`),
-  UNIQUE INDEX `idLetter_grade_thresholds_UNIQUE` (`idGrade_thresholds` ASC) VISIBLE,
-  INDEX `Grading_group_id_threshold_idx` (`Grading_group_id` ASC) VISIBLE,
-  CONSTRAINT `Grading_group_id_threshold`
-    FOREIGN KEY (`Grading_group_id`)
-    REFERENCES `LINQ`.`Grading_groups` (`idGrading_groups`)
-    ON DELETE NO ACTION
-    ON UPDATE NO ACTION)
+  PRIMARY KEY (`idGrade_thresholds`),
+  UNIQUE INDEX `idLetter_grade_thresholds_UNIQUE` (`idGrade_thresholds` ASC) VISIBLE)
 ENGINE = InnoDB;
 
 
@@ -272,6 +255,7 @@ ENGINE = InnoDB;
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `LINQ`.`Letter_grade_chars` (
   `idLetter_grade_chars` INT NOT NULL AUTO_INCREMENT COMMENT 'Letter grades (A, B+, D--, A*, MERIT, DISTINCTION, PASS etc.)\n\nIf grading chars is implemented then there must be at least one grading group present. The sequence of cahrs used might apply to multiple gradings with different numerical thresholds. Grading_chars need not exist for grading groups to exist, hence non-identifying.',
+  `Letter_grade_notes` VARCHAR(100) NULL,
   `Highest_char` VARCHAR(11) NOT NULL,
   `High1_char` VARCHAR(11) NULL,
   `High2_char` VARCHAR(11) NULL,
@@ -292,13 +276,37 @@ CREATE TABLE IF NOT EXISTS `LINQ`.`Letter_grade_chars` (
   `High17_char` VARCHAR(11) NULL,
   `High18_char` VARCHAR(11) NULL,
   `Lowest_char` VARCHAR(11) NOT NULL,
-  `Grading_group_id` INT NOT NULL,
-  PRIMARY KEY (`idLetter_grade_chars`, `Grading_group_id`),
-  UNIQUE INDEX `idLetter_grade_chars_UNIQUE` (`idLetter_grade_chars` ASC) VISIBLE,
-  INDEX `Grading_group_id_letters_idx` (`Grading_group_id` ASC) VISIBLE,
-  CONSTRAINT `Grading_group_id_letters`
-    FOREIGN KEY (`Grading_group_id`)
-    REFERENCES `LINQ`.`Grading_groups` (`idGrading_groups`)
+  PRIMARY KEY (`idLetter_grade_chars`),
+  UNIQUE INDEX `idLetter_grade_chars_UNIQUE` (`idLetter_grade_chars` ASC) VISIBLE)
+ENGINE = InnoDB;
+
+
+-- -----------------------------------------------------
+-- Table `LINQ`.`Grading_groups`
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS `LINQ`.`Grading_groups` (
+  `idGrading_groups` INT NOT NULL AUTO_INCREMENT,
+  `Assignment_id` INT NOT NULL,
+  `Grade_thresholds_id` INT NULL,
+  `Letter_grade_chars_id` INT NULL,
+  PRIMARY KEY (`idGrading_groups`, `Assignment_id`),
+  UNIQUE INDEX `idLetter_grade_groups_UNIQUE` (`idGrading_groups` ASC) VISIBLE,
+  INDEX `Assignment_id_threshold_idx` (`Assignment_id` ASC) VISIBLE,
+  INDEX `Grade_thresholds_id_idx` (`Grade_thresholds_id` ASC) VISIBLE,
+  INDEX `Letter_grade_chars_id_idx` (`Letter_grade_chars_id` ASC) VISIBLE,
+  CONSTRAINT `Assignment_id_threshold`
+    FOREIGN KEY (`Assignment_id`)
+    REFERENCES `LINQ`.`Assignments_info` (`idAssignments_info`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION,
+  CONSTRAINT `Grade_thresholds_id`
+    FOREIGN KEY (`Grade_thresholds_id`)
+    REFERENCES `LINQ`.`Grade_thresholds` (`idGrade_thresholds`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION,
+  CONSTRAINT `Letter_grade_chars_id`
+    FOREIGN KEY (`Letter_grade_chars_id`)
+    REFERENCES `LINQ`.`Letter_grade_chars` (`idLetter_grade_chars`)
     ON DELETE NO ACTION
     ON UPDATE NO ACTION)
 ENGINE = InnoDB;
@@ -308,11 +316,13 @@ ENGINE = InnoDB;
 -- Table `LINQ`.`Students_JUNC_Subjects`
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `LINQ`.`Students_JUNC_Subjects` (
+  `idStudent_JUNC_Subjects` INT NOT NULL AUTO_INCREMENT,
   `Student_id` INT NOT NULL COMMENT 'Part of a composite PK\nThe junction is needed to faciliate a direct link between many-to-many relationships.\nThis junction (bridge) could be used to list the subjects that are taken by a particular student, or vice versa.',
   `Subject_id` INT NOT NULL COMMENT 'Part of a composite PK',
   INDEX `fk_Students_has_Subjects_Subjects1_idx` (`Subject_id` ASC) VISIBLE,
   INDEX `fk_Students_has_Subjects_Students1_idx` (`Student_id` ASC) VISIBLE,
-  PRIMARY KEY (`Subject_id`, `Student_id`),
+  PRIMARY KEY (`idStudent_JUNC_Subjects`),
+  UNIQUE INDEX `idStudent_JUNC_Subjects_UNIQUE` (`idStudent_JUNC_Subjects` ASC) VISIBLE,
   CONSTRAINT `Students_id`
     FOREIGN KEY (`Student_id`)
     REFERENCES `LINQ`.`Students` (`idStudents`)
@@ -336,14 +346,41 @@ CREATE TABLE IF NOT EXISTS `LINQ`.`Guardians_addresses` (
   `County_State` VARCHAR(45) NULL,
   `Postcode_ZIPcode` VARCHAR(10) NOT NULL,
   `Country` VARCHAR(45) NULL,
-  `Guardian_id` INT NULL,
+  `Guardian_id` INT NOT NULL,
   UNIQUE INDEX `idAddresses_UNIQUE` (`idGuardians_addresses` ASC) VISIBLE,
-  PRIMARY KEY (`idGuardians_addresses`),
+  PRIMARY KEY (`idGuardians_addresses`, `Guardian_id`),
   INDEX `Guardian1_address_idx` (`Guardian_id` ASC) VISIBLE,
   CONSTRAINT `Guardian1_address`
     FOREIGN KEY (`Guardian_id`)
     REFERENCES `LINQ`.`Guardians` (`idGuardians`)
     ON DELETE CASCADE
+    ON UPDATE NO ACTION)
+ENGINE = InnoDB;
+
+
+-- -----------------------------------------------------
+-- Table `LINQ`.`Student_report`
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS `LINQ`.`Student_report` (
+  `idStudent_report` INT NOT NULL AUTO_INCREMENT,
+  `Student_id` INT NOT NULL,
+  `Teacher_id` INT NOT NULL,
+  `Report_date` DATE NOT NULL,
+  `Academic_comments` VARCHAR(1000) NULL,
+  `Pastoral_comments` VARCHAR(1000) NULL,
+  PRIMARY KEY (`idStudent_report`, `Student_id`, `Teacher_id`),
+  UNIQUE INDEX `idStudent_report_UNIQUE` (`idStudent_report` ASC) VISIBLE,
+  INDEX `Student_id_report_idx` (`Student_id` ASC) VISIBLE,
+  INDEX `Teacher_id_report_idx` (`Teacher_id` ASC) VISIBLE,
+  CONSTRAINT `Student_id_report`
+    FOREIGN KEY (`Student_id`)
+    REFERENCES `LINQ`.`Students` (`idStudents`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION,
+  CONSTRAINT `Teacher_id_report`
+    FOREIGN KEY (`Teacher_id`)
+    REFERENCES `LINQ`.`Teachers` (`idTeachers`)
+    ON DELETE NO ACTION
     ON UPDATE NO ACTION)
 ENGINE = InnoDB;
 
