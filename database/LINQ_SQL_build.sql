@@ -24,6 +24,7 @@ CREATE TABLE IF NOT EXISTS `LINQ`.`Students` (
   `Student_mid_initials` VARCHAR(10) NULL,
   `Student_email` VARCHAR(45) NULL,
   `Student_phone` VARCHAR(20) NULL COMMENT 'ITU recommendation of 15 digits',
+  `Year_group` VARCHAR(5) NULL,
   PRIMARY KEY (`idStudents`),
   UNIQUE INDEX `Student_id_UNIQUE` (`idStudents` ASC) VISIBLE)
 ENGINE = InnoDB;
@@ -106,11 +107,13 @@ ENGINE = InnoDB;
 -- Table `LINQ`.`Academic_class`
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `LINQ`.`Academic_class` (
-  `Subjects_Teachers_group_id` INT NOT NULL COMMENT 'This junction could be used to list the students a subject teacher teaches, or vice versa.',
+  `idAcademic_class` INT NOT NULL AUTO_INCREMENT,
   `Student_id` INT NOT NULL,
-  PRIMARY KEY (`Subjects_Teachers_group_id`, `Student_id`),
+  `Subjects_Teachers_group_id` INT NOT NULL COMMENT 'This junction could be used to list the students a subject teacher teaches, or vice versa.',
   INDEX `fk_Subjects_Teachers_group_has_Students_Students1_idx` (`Student_id` ASC) VISIBLE,
   INDEX `fk_Subjects_Teachers_group_has_Students_Subjects_Teachers_g_idx` (`Subjects_Teachers_group_id` ASC) VISIBLE,
+  PRIMARY KEY (`idAcademic_class`),
+  UNIQUE INDEX `idAcademic_class_UNIQUE` (`idAcademic_class` ASC) VISIBLE,
   CONSTRAINT `fk_Subjects_Teachers_group_has_Students_Subjects_Teachers_gro1`
     FOREIGN KEY (`Subjects_Teachers_group_id`)
     REFERENCES `LINQ`.`Subjects_Teachers_group` (`idSubjects_Teachers_group`)
@@ -128,17 +131,87 @@ ENGINE = InnoDB;
 -- Table `LINQ`.`Form_group`
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `LINQ`.`Form_group` (
-  `Teacher_id` INT NOT NULL COMMENT 'This junction could be used to list the students a form tutor is responsible for, or vice versa.',
+  `idForm_group` INT NOT NULL AUTO_INCREMENT,
   `Student_id` INT NOT NULL,
-  PRIMARY KEY (`Teacher_id`, `Student_id`),
+  `Teacher_id` INT NOT NULL COMMENT 'This junction could be used to list the students a form tutor is responsible for, or vice versa.',
   INDEX `fk_Teachers_has_Students_Students1_idx` (`Student_id` ASC) VISIBLE,
   INDEX `fk_Teachers_has_Students_Teachers1_idx` (`Teacher_id` ASC) VISIBLE,
-  CONSTRAINT `fk_Teachers_has_Students_Teachers1`
+  PRIMARY KEY (`idForm_group`),
+  UNIQUE INDEX `idForm_group_UNIQUE` (`idForm_group` ASC) VISIBLE,
+  CONSTRAINT `Teacher_id_form_group`
     FOREIGN KEY (`Teacher_id`)
     REFERENCES `LINQ`.`Teachers` (`idTeachers`)
     ON DELETE NO ACTION
     ON UPDATE NO ACTION,
-  CONSTRAINT `fk_Teachers_has_Students_Students1`
+  CONSTRAINT `Student_id_form_group`
+    FOREIGN KEY (`Student_id`)
+    REFERENCES `LINQ`.`Students` (`idStudents`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION)
+ENGINE = InnoDB;
+
+
+-- -----------------------------------------------------
+-- Table `LINQ`.`Assignments_info`
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS `LINQ`.`Assignments_info` (
+  `idAssignments_info` INT NOT NULL AUTO_INCREMENT COMMENT 'One-to-one relationship with Assignments_sub_by_a_teacher (Assignment_details is the parent and is needed by Assignments_sub_by_a_teacher)\nIf there are assignment details present (or inserted into LINQ), then there must be a record of who submitted it. The details apply to only one submission.\nIf one assignment is submitted by one teacher then the assignment has unique assignment details.\n\nAssignments need not have a threshold set and would normally only have one threshold. Conversely, for a threshold to exist, there must be at least one assignment ready, the same threshold could apply to different assignments.\n\nOnce prepared, there need not be any student scores yet but mutliple scores at best. Conversely, for a student record to exist, there must be at least one assignment with details prepared. It is assumed that the assignment score and comments are unique to the assignment taken. Hence the relationship is identifying.',
+  `Assignment_title` VARCHAR(45) NOT NULL,
+  `Assignment_info` VARCHAR(100) NULL,
+  `Max_raw_score` INT NOT NULL DEFAULT 100,
+  `Type_of_assessment` CHAR NOT NULL,
+  `Assignment_instructions` VARCHAR(200) NULL,
+  PRIMARY KEY (`idAssignments_info`),
+  UNIQUE INDEX `idAssignments_UNIQUE` (`idAssignments_info` ASC) VISIBLE)
+ENGINE = InnoDB;
+
+
+-- -----------------------------------------------------
+-- Table `LINQ`.`Assignments_sub_by_a_teacher`
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS `LINQ`.`Assignments_sub_by_a_teacher` (
+  `idAssignments_sub_by_a_teacher` INT NOT NULL AUTO_INCREMENT COMMENT 'This table shows who set the assignment and when. It also indicates if the assignment should contribute to the cumulative average of the end-of-term summary.\n',
+  `Assignment_entry_date` DATE NOT NULL,
+  `Add_to_average` TINYINT NOT NULL DEFAULT 1 COMMENT 'Set to zero if this assignment should not contribute to the cumulative average.',
+  `Assignment_id` INT NOT NULL,
+  `Teacher_id` INT NOT NULL COMMENT 'If the teacher leaves then Teacher_id (a FK) is set to NULL',
+  PRIMARY KEY (`idAssignments_sub_by_a_teacher`),
+  UNIQUE INDEX `idTeacher_assignments_UNIQUE` (`idAssignments_sub_by_a_teacher` ASC) VISIBLE,
+  INDEX `Assignment_id_sub_idx` (`Assignment_id` ASC) VISIBLE,
+  INDEX `Teacher_id_sub_idx` (`Teacher_id` ASC) VISIBLE,
+  CONSTRAINT `Assignment_id_sub`
+    FOREIGN KEY (`Assignment_id`)
+    REFERENCES `LINQ`.`Assignments_info` (`idAssignments_info`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION,
+  CONSTRAINT `Teacher_id_sub`
+    FOREIGN KEY (`Teacher_id`)
+    REFERENCES `LINQ`.`Teachers` (`idTeachers`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION)
+ENGINE = InnoDB;
+
+
+-- -----------------------------------------------------
+-- Table `LINQ`.`Student_assignments`
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS `LINQ`.`Student_assignments` (
+  `idStudent_assignments` INT NOT NULL AUTO_INCREMENT,
+  `Assignment_id` INT NOT NULL,
+  `Comments_for_guardians` VARCHAR(300) NULL,
+  `Comments_for_staff` VARCHAR(300) NULL,
+  `Raw_score` INT NULL COMMENT 'Allow NULL for students who were absent (ignored when average is tallied)',
+  `Student_id` INT NOT NULL,
+  PRIMARY KEY (`idStudent_assignments`, `Assignment_id`),
+  UNIQUE INDEX `idStudent_assignments_UNIQUE` (`idStudent_assignments` ASC) VISIBLE,
+  INDEX `Assignment_id_idx` (`Assignment_id` ASC) VISIBLE,
+  INDEX `Student_id_idx` (`Student_id` ASC) VISIBLE,
+  CONSTRAINT `Students_Assignment_id`
+    FOREIGN KEY (`Assignment_id`)
+    REFERENCES `LINQ`.`Assignments_info` (`idAssignments_info`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION,
+  CONSTRAINT `Student_id_assignments`
     FOREIGN KEY (`Student_id`)
     REFERENCES `LINQ`.`Students` (`idStudents`)
     ON DELETE NO ACTION
@@ -151,6 +224,7 @@ ENGINE = InnoDB;
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `LINQ`.`Grade_thresholds` (
   `idGrade_thresholds` INT NOT NULL AUTO_INCREMENT COMMENT 'If grade thresholds exist, then a group must have been instantiated. The thresholds might apply to different assignments (papers of the same type, or, use of Cambridge\'s PUM). If a grading group exists then there must be numerical thresholds in mind. Hence the identifying relationship.',
+  `Threshold_notes` VARCHAR(100) NULL,
   `Highest_raw_threshold` INT NOT NULL,
   `High1_raw` INT NULL,
   `High2_raw` INT NULL,
@@ -181,6 +255,7 @@ ENGINE = InnoDB;
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `LINQ`.`Letter_grade_chars` (
   `idLetter_grade_chars` INT NOT NULL AUTO_INCREMENT COMMENT 'Letter grades (A, B+, D--, A*, MERIT, DISTINCTION, PASS etc.)\n\nIf grading chars is implemented then there must be at least one grading group present. The sequence of cahrs used might apply to multiple gradings with different numerical thresholds. Grading_chars need not exist for grading groups to exist, hence non-identifying.',
+  `Letter_grade_notes` VARCHAR(100) NULL,
   `Highest_char` VARCHAR(11) NOT NULL,
   `High1_char` VARCHAR(11) NULL,
   `High2_char` VARCHAR(11) NULL,
@@ -211,13 +286,20 @@ ENGINE = InnoDB;
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `LINQ`.`Grading_groups` (
   `idGrading_groups` INT NOT NULL AUTO_INCREMENT,
-  `Grade_thresholds_id` INT NOT NULL,
+  `Assignment_id` INT NOT NULL,
+  `Grade_thresholds_id` INT NULL,
   `Letter_grade_chars_id` INT NULL,
-  PRIMARY KEY (`idGrading_groups`, `Grade_thresholds_id`),
+  PRIMARY KEY (`idGrading_groups`, `Assignment_id`),
   UNIQUE INDEX `idLetter_grade_groups_UNIQUE` (`idGrading_groups` ASC) VISIBLE,
-  INDEX `Letter_grade_thresholds_id_idx` (`Grade_thresholds_id` ASC) VISIBLE,
+  INDEX `Assignment_id_threshold_idx` (`Assignment_id` ASC) VISIBLE,
+  INDEX `Grade_thresholds_id_idx` (`Grade_thresholds_id` ASC) VISIBLE,
   INDEX `Letter_grade_chars_id_idx` (`Letter_grade_chars_id` ASC) VISIBLE,
-  CONSTRAINT `Letter_grade_thresholds_id`
+  CONSTRAINT `Assignment_id_threshold`
+    FOREIGN KEY (`Assignment_id`)
+    REFERENCES `LINQ`.`Assignments_info` (`idAssignments_info`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION,
+  CONSTRAINT `Grade_thresholds_id`
     FOREIGN KEY (`Grade_thresholds_id`)
     REFERENCES `LINQ`.`Grade_thresholds` (`idGrade_thresholds`)
     ON DELETE NO ACTION
@@ -231,81 +313,16 @@ ENGINE = InnoDB;
 
 
 -- -----------------------------------------------------
--- Table `LINQ`.`Assignments_details`
--- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `LINQ`.`Assignments_details` (
-  `idAssignments_details` INT NOT NULL AUTO_INCREMENT COMMENT 'One-to-one relationship with Assignments_sub_by_a_teacher (Assignment_details is the parent and is needed by Assignments_sub_by_a_teacher)\nIf there are assignment details present (or inserted into LINQ), then there must be a record of who submitted it. The details apply to only one submission.\nIf one assignment is submitted by one teacher then the assignment has unique assignment details.\n\nAssignments need not have a threshold set and would normally only have one threshold. Conversely, for a threshold to exist, there must be at least one assignment ready, the same threshold could apply to different assignments.\n\nOnce prepared, there need not be any student scores yet but mutliple scores at best. Conversely, for a student record to exist, there must be at least one assignment with details prepared. It is assumed that the assignment score and comments are unique to the assignment taken. Hence the relationship is identifying.',
-  `Assignment_title` VARCHAR(45) NOT NULL,
-  `Assignment_details` VARCHAR(100) NULL,
-  `Max_raw_score` INT NOT NULL DEFAULT 100,
-  `Letter_grade_group_id` INT NULL,
-  `Component` CHAR NOT NULL,
-  PRIMARY KEY (`idAssignments_details`),
-  UNIQUE INDEX `idAssignments_UNIQUE` (`idAssignments_details` ASC) VISIBLE,
-  INDEX `Letter_grade_groups_id_idx` (`Letter_grade_group_id` ASC) VISIBLE,
-  CONSTRAINT `Letter_grade_groups_id`
-    FOREIGN KEY (`Letter_grade_group_id`)
-    REFERENCES `LINQ`.`Grading_groups` (`idGrading_groups`)
-    ON DELETE NO ACTION
-    ON UPDATE NO ACTION)
-ENGINE = InnoDB;
-
-
--- -----------------------------------------------------
--- Table `LINQ`.`Assignments_sub_by_a_teacher`
--- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `LINQ`.`Assignments_sub_by_a_teacher` (
-  `idAssignments_sub_by_a_teacher` INT NOT NULL AUTO_INCREMENT COMMENT 'This table shows who set the assignment and when. It also indicates if the assignment should contribute to the cumulative average of the end-of-term summary.\n',
-  `Assignment_entry_date` DATE NOT NULL,
-  `Add_to_average` TINYINT NOT NULL DEFAULT 1 COMMENT 'Set to zero if this assignment should not contribute to the cumulative average.',
-  `Assignment_id` INT NOT NULL,
-  `Assignment_setter` INT NOT NULL COMMENT 'If the teacher leaves then Teacher_id (a FK) is set to NULL',
-  PRIMARY KEY (`idAssignments_sub_by_a_teacher`, `Assignment_id`),
-  UNIQUE INDEX `idTeacher_assignments_UNIQUE` (`idAssignments_sub_by_a_teacher` ASC) VISIBLE,
-  INDEX `Teacher_id_idx` (`Assignment_setter` ASC) VISIBLE,
-  INDEX `Assignment_id_idx` (`Assignment_id` ASC) VISIBLE,
-  CONSTRAINT `Assignment_setter`
-    FOREIGN KEY (`Assignment_setter`)
-    REFERENCES `LINQ`.`Teachers` (`idTeachers`)
-    ON DELETE NO ACTION
-    ON UPDATE NO ACTION,
-  CONSTRAINT `Assignment_id`
-    FOREIGN KEY (`Assignment_id`)
-    REFERENCES `LINQ`.`Assignments_details` (`idAssignments_details`)
-    ON DELETE NO ACTION
-    ON UPDATE NO ACTION)
-ENGINE = InnoDB;
-
-
--- -----------------------------------------------------
--- Table `LINQ`.`Student_assignments`
--- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `LINQ`.`Student_assignments` (
-  `idStudent_assignments` INT NOT NULL AUTO_INCREMENT,
-  `Assignment_id` INT NOT NULL,
-  `Comments_for_guardians` VARCHAR(300) NULL,
-  `Comments_for_staff` VARCHAR(300) NULL,
-  `Raw_score` INT NULL COMMENT 'Allow NULL for students who were absent (ignored when average is tallied)',
-  PRIMARY KEY (`idStudent_assignments`, `Assignment_id`),
-  UNIQUE INDEX `idStudent_assignments_UNIQUE` (`idStudent_assignments` ASC) VISIBLE,
-  INDEX `Assignment_id_idx` (`Assignment_id` ASC) VISIBLE,
-  CONSTRAINT `Students_Assignment_id`
-    FOREIGN KEY (`Assignment_id`)
-    REFERENCES `LINQ`.`Assignments_details` (`idAssignments_details`)
-    ON DELETE NO ACTION
-    ON UPDATE NO ACTION)
-ENGINE = InnoDB;
-
-
--- -----------------------------------------------------
 -- Table `LINQ`.`Students_JUNC_Subjects`
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `LINQ`.`Students_JUNC_Subjects` (
+  `idStudent_JUNC_Subjects` INT NOT NULL AUTO_INCREMENT,
   `Student_id` INT NOT NULL COMMENT 'Part of a composite PK\nThe junction is needed to faciliate a direct link between many-to-many relationships.\nThis junction (bridge) could be used to list the subjects that are taken by a particular student, or vice versa.',
   `Subject_id` INT NOT NULL COMMENT 'Part of a composite PK',
   INDEX `fk_Students_has_Subjects_Subjects1_idx` (`Subject_id` ASC) VISIBLE,
   INDEX `fk_Students_has_Subjects_Students1_idx` (`Student_id` ASC) VISIBLE,
-  PRIMARY KEY (`Student_id`, `Subject_id`),
+  PRIMARY KEY (`idStudent_JUNC_Subjects`),
+  UNIQUE INDEX `idStudent_JUNC_Subjects_UNIQUE` (`idStudent_JUNC_Subjects` ASC) VISIBLE,
   CONSTRAINT `Students_id`
     FOREIGN KEY (`Student_id`)
     REFERENCES `LINQ`.`Students` (`idStudents`)
@@ -323,16 +340,18 @@ ENGINE = InnoDB;
 -- Table `LINQ`.`Guardians_addresses`
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `LINQ`.`Guardians_addresses` (
-  `idGuardians1_addresses` INT NOT NULL AUTO_INCREMENT,
+  `idGuardians_addresses` INT NOT NULL AUTO_INCREMENT,
   `First_line` VARCHAR(45) NOT NULL,
   `Second_line` VARCHAR(45) NULL,
   `County_State` VARCHAR(45) NULL,
   `Postcode_ZIPcode` VARCHAR(10) NOT NULL,
   `Country` VARCHAR(45) NULL,
-  UNIQUE INDEX `idAddresses_UNIQUE` (`idGuardians1_addresses` ASC) VISIBLE,
-  PRIMARY KEY (`idGuardians1_addresses`),
+  `Guardian_id` INT NOT NULL,
+  UNIQUE INDEX `idAddresses_UNIQUE` (`idGuardians_addresses` ASC) VISIBLE,
+  PRIMARY KEY (`idGuardians_addresses`, `Guardian_id`),
+  INDEX `Guardian1_address_idx` (`Guardian_id` ASC) VISIBLE,
   CONSTRAINT `Guardian1_address`
-    FOREIGN KEY (`idGuardians1_addresses`)
+    FOREIGN KEY (`Guardian_id`)
     REFERENCES `LINQ`.`Guardians` (`idGuardians`)
     ON DELETE CASCADE
     ON UPDATE NO ACTION)
@@ -340,23 +359,27 @@ ENGINE = InnoDB;
 
 
 -- -----------------------------------------------------
--- Table `LINQ`.`Students_JUNC_Student_assignments`
+-- Table `LINQ`.`Student_report`
 -- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `LINQ`.`Students_JUNC_Student_assignments` (
-  `Students_id` INT NOT NULL,
-  `Student_assignments_id` INT NOT NULL,
-  `Assignment_id` INT NOT NULL,
-  PRIMARY KEY (`Students_id`, `Student_assignments_id`, `Assignment_id`),
-  INDEX `fk_Students_has_Student_assignments_Student_assignments1_idx` (`Student_assignments_id` ASC, `Assignment_id` ASC) VISIBLE,
-  INDEX `fk_Students_has_Student_assignments_Students1_idx` (`Students_id` ASC) VISIBLE,
-  CONSTRAINT `fk_Students_has_Student_assignments_Students1`
-    FOREIGN KEY (`Students_id`)
+CREATE TABLE IF NOT EXISTS `LINQ`.`Student_report` (
+  `idStudent_report` INT NOT NULL AUTO_INCREMENT,
+  `Student_id` INT NOT NULL,
+  `Teacher_id` INT NOT NULL,
+  `Report_date` DATE NOT NULL,
+  `Academic_comments` VARCHAR(1000) NULL,
+  `Pastoral_comments` VARCHAR(1000) NULL,
+  PRIMARY KEY (`idStudent_report`, `Student_id`, `Teacher_id`),
+  UNIQUE INDEX `idStudent_report_UNIQUE` (`idStudent_report` ASC) VISIBLE,
+  INDEX `Student_id_report_idx` (`Student_id` ASC) VISIBLE,
+  INDEX `Teacher_id_report_idx` (`Teacher_id` ASC) VISIBLE,
+  CONSTRAINT `Student_id_report`
+    FOREIGN KEY (`Student_id`)
     REFERENCES `LINQ`.`Students` (`idStudents`)
     ON DELETE NO ACTION
     ON UPDATE NO ACTION,
-  CONSTRAINT `fk_Students_has_Student_assignments_Student_assignments1`
-    FOREIGN KEY (`Student_assignments_id` , `Assignment_id`)
-    REFERENCES `LINQ`.`Student_assignments` (`idStudent_assignments` , `Assignment_id`)
+  CONSTRAINT `Teacher_id_report`
+    FOREIGN KEY (`Teacher_id`)
+    REFERENCES `LINQ`.`Teachers` (`idTeachers`)
     ON DELETE NO ACTION
     ON UPDATE NO ACTION)
 ENGINE = InnoDB;
