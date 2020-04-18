@@ -1,0 +1,2 @@
+CREATE VIEW `Subjects_available_with_students` AS
+select * from tblSubjects left join tblstudents_subjects on idSubjects = tblStudents_Subjects.subjects_id left join tblStudents on tblStudents_Subjects.students_id = idStudents;
