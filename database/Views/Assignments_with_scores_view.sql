@@ -1,6 +1,7 @@
 CREATE VIEW `Assignments_with_scores` AS
 SELECT 
     idStudents,
+    student_number,
     student_fname,
     student_mid_initial,
     student_lname,
