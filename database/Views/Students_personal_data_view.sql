@@ -1,4 +1,4 @@
-CREATE VIEW `Students_personal_data` AS
+CREATE VIEW `vw_Students_personal_data` AS
     SELECT 
         *
     FROM

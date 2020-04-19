@@ -1,4 +1,4 @@
-CREATE VIEW `Academic_classes_with_students` AS
+CREATE VIEW `vw_Academic_classes_with_students` AS
     SELECT 
         *
     FROM

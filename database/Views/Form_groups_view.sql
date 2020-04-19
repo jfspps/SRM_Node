@@ -1,4 +1,4 @@
-CREATE VIEW `Form_group_list` AS
+CREATE VIEW `vw_Form_group_list` AS
     SELECT 
         *
     FROM
