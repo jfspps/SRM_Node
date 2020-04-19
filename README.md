@@ -4,7 +4,7 @@ LINQ is a suite of applications which store and process academic data
 __Requirements: Java VM and MySQL__
 
 __Installation__
-1. Install both the latest Java VM and MySQL Workbench (community edition)
+1. Install both the latest Java VM and MySQL Workbench (community edition) on the server
 2. Setup admin account(s) on the MySQL server and perform additional security checks (removing defaults)
 3. Install LINQ-server and then add users with necessary privileges (sample SQL script, with instructions, can be used directly from the SQL console)
 4. Install LINQ-client (bundled with SQLite) on all required machines, register (or login) and connect to LINQ-server over SSL
