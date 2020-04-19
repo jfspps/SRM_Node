@@ -1,4 +1,4 @@
-CREATE VIEW `Students_assignments_grades` AS
+CREATE VIEW `vw_Students_assignments_grades` AS
 SELECT 
         idStudents,
         student_number,

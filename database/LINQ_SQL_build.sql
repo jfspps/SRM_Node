@@ -7,6 +7,7 @@ SET @OLD_SQL_MODE=@@SQL_MODE, SQL_MODE='ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,N
 -- -----------------------------------------------------
 -- Schema LINQ
 -- -----------------------------------------------------
+DROP SCHEMA IF EXISTS `LINQ` ;
 
 -- -----------------------------------------------------
 -- Schema LINQ
@@ -19,6 +20,7 @@ USE `LINQ` ;
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `LINQ`.`tblStudents` (
   `idStudents` INT NOT NULL AUTO_INCREMENT COMMENT 'Students cannot be enrolled in a school without a legal Guardian, so the relationship is identifying (idStudents embeds idGuardians in its PK)',
+  `Student_number` VARCHAR(10) NULL COMMENT 'Allows for an school/college-based student ID\n\nThis field can also be used to determine the order in which records are viewed (if idStudents does not meet the requirements)',
   `Student_fname` VARCHAR(45) NOT NULL,
   `Student_lname` VARCHAR(45) NOT NULL,
   `Student_mid_initial` VARCHAR(10) NULL,
@@ -26,7 +28,8 @@ CREATE TABLE IF NOT EXISTS `LINQ`.`tblStudents` (
   `Student_phone` VARCHAR(20) NULL COMMENT 'ITU recommendation of 15 digits',
   `Year_group` VARCHAR(5) NULL,
   PRIMARY KEY (`idStudents`),
-  UNIQUE INDEX `Student_id_UNIQUE` (`idStudents` ASC) VISIBLE)
+  UNIQUE INDEX `Student_id_UNIQUE` (`idStudents` ASC) VISIBLE,
+  UNIQUE INDEX `Student_number_UNIQUE` (`Student_number` ASC) VISIBLE)
 ENGINE = InnoDB;
 
 
@@ -68,7 +71,7 @@ ENGINE = InnoDB;
 -- Table `LINQ`.`tblTeachers`
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `LINQ`.`tblTeachers` (
-  `idTeachers` INT NOT NULL AUTO_INCREMENT COMMENT 'Re. assignments\nAt the beginning of the year, there may be zero assignments set. However, the assignment, once submitted, can be accessed (shared e.g. year-wide exams) by at least one teacher and possible many more.\nEach assignment set requires only one teacher to set it; in LINQ, it is assumed that multiple teachers do not submit the same assignment.',
+  `idTeachers` INT NOT NULL AUTO_INCREMENT COMMENT 'Re. assignments\nAt the beginning of the year, there may be zero assignments set. However, the assignment, once submitted, can be accessed (shared e.g. year-wide exams) by at least one teacher and possible many more.\nEach assignment set requires only one teacher to set it; in LINQ, it is assumed that multiple teachers do not submit the same assignment.\n\nLINQ checks the identity of teacher by reading multiple fields before transactions are processed, ensuring teachers only update their own records',
   `Teacher_fname` VARCHAR(45) NOT NULL,
   `Teacher_lname` VARCHAR(45) NOT NULL,
   `Form_group_name` VARCHAR(45) NULL COMMENT 'Not all teachers are pastoral tutors; when they are this field names the group e.g. 10SB\nPlacing it in Teachers table instead of Students_JUNC_teachers table minimises repeated entries',
@@ -157,7 +160,7 @@ ENGINE = InnoDB;
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `LINQ`.`tblAssignments_info` (
   `idAssignments_info` INT NOT NULL AUTO_INCREMENT COMMENT 'An assignment need not have a threshold set (Grading_group) and would normally only have one threshold (here, different thresholds are permitted). Conversely, for a threshold to exist, there must be at least one assignment ready, the same threshold could apply to different assignments. Hence Assignments_info is 1-to-many with the child table Grading group, and identifying.\n\nIn relation to Student_Assignments (students\' scores), an assignment can exist but there need not be any student scores available. There are mutiple student scores for a given assignment. Conversely, for a student record to exist, there must be at least one assignment with details prepared.  Hence the relationship is identifying. It is assumed that the assignment score and instructions are unique to the assignment taken.',
-  `Assignment_title` VARCHAR(45) NOT NULL,
+  `Assignment_title` VARCHAR(45) NOT NULL COMMENT 'This field can be populated such that it controls the order in which records are viewed (if PKs do not serve adequate purpose)',
   `Assignment_detail` VARCHAR(100) NULL,
   `Max_raw_score` INT NOT NULL DEFAULT 100,
   `Type_of_assessment` CHAR NOT NULL,
@@ -387,79 +390,97 @@ CREATE TABLE IF NOT EXISTS `LINQ`.`tblStudent_reports` (
     ON UPDATE NO ACTION)
 ENGINE = InnoDB;
 
+
+-- -----------------------------------------------------
+-- Table `LINQ`.`tblLINQ_users`
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS `LINQ`.`tblLINQ_users` (
+  `idLINQ_users` INT NOT NULL AUTO_INCREMENT,
+  `user_fname` VARCHAR(45) NULL,
+  `user_lname` VARCHAR(45) NULL,
+  `LINQ_username` VARCHAR(45) NOT NULL,
+  `LINQ_pw` VARCHAR(45) NOT NULL,
+  `LINQ_useremail` VARCHAR(45) NOT NULL,
+  `LINQ_lastlogin` DATETIME NULL,
+  PRIMARY KEY (`idLINQ_users`),
+  UNIQUE INDEX `idLINQ_users_UNIQUE` (`idLINQ_users` ASC) VISIBLE,
+  UNIQUE INDEX `LINQ_username_UNIQUE` (`LINQ_username` ASC) VISIBLE,
+  UNIQUE INDEX `LINQ_useremail_UNIQUE` (`LINQ_useremail` ASC) VISIBLE)
+ENGINE = InnoDB;
+
 USE `LINQ` ;
 
 -- -----------------------------------------------------
--- Placeholder table for view `LINQ`.`Form_group_list`
+-- Placeholder table for view `LINQ`.`vw_Form_group_list`
 -- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `LINQ`.`Form_group_list` (`idStudents` INT, `Student_fname` INT, `Student_lname` INT, `Student_mid_initial` INT, `Student_email` INT, `Student_phone` INT, `Year_group` INT, `idForm_groups` INT, `Students_id` INT, `Teachers_id` INT, `idTeachers` INT, `Teacher_fname` INT, `Teacher_lname` INT, `Form_group_name` INT, `Teacher_work_email` INT, `Teacher_phone` INT);
+CREATE TABLE IF NOT EXISTS `LINQ`.`vw_Form_group_list` (`idStudents` INT, `Student_number` INT, `Student_fname` INT, `Student_lname` INT, `Student_mid_initial` INT, `Student_email` INT, `Student_phone` INT, `Year_group` INT, `idForm_groups` INT, `Students_id` INT, `Teachers_id` INT, `idTeachers` INT, `Teacher_fname` INT, `Teacher_lname` INT, `Form_group_name` INT, `Teacher_work_email` INT, `Teacher_phone` INT);
 
 -- -----------------------------------------------------
--- Placeholder table for view `LINQ`.`Academic_classes_with_students`
+-- Placeholder table for view `LINQ`.`vw_Academic_classes_with_students`
 -- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `LINQ`.`Academic_classes_with_students` (`idStudents` INT, `Student_fname` INT, `Student_lname` INT, `Student_mid_initial` INT, `Student_email` INT, `Student_phone` INT, `Year_group` INT, `idSubjects_Teachers_group` INT, `Subject_class_name` INT, `Subjects_id` INT, `Teachers_id` INT, `idTeachers` INT, `Teacher_fname` INT, `Teacher_lname` INT, `Form_group_name` INT, `Teacher_work_email` INT, `Teacher_phone` INT, `idSubjects` INT, `Subject_title` INT);
+CREATE TABLE IF NOT EXISTS `LINQ`.`vw_Academic_classes_with_students` (`idStudents` INT, `Student_number` INT, `Student_fname` INT, `Student_lname` INT, `Student_mid_initial` INT, `Student_email` INT, `Student_phone` INT, `Year_group` INT, `idSubjects_Teachers_group` INT, `Subject_class_name` INT, `Subjects_id` INT, `Teachers_id` INT, `idTeachers` INT, `Teacher_fname` INT, `Teacher_lname` INT, `Form_group_name` INT, `Teacher_work_email` INT, `Teacher_phone` INT, `idSubjects` INT, `Subject_title` INT);
 
 -- -----------------------------------------------------
--- Placeholder table for view `LINQ`.`Subjects_available`
+-- Placeholder table for view `LINQ`.`vw_Subjects_available`
 -- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `LINQ`.`Subjects_available` (`idSubjects` INT, `Subject_title` INT);
+CREATE TABLE IF NOT EXISTS `LINQ`.`vw_Subjects_available` (`idSubjects` INT, `Subject_title` INT);
 
 -- -----------------------------------------------------
--- Placeholder table for view `LINQ`.`Subjects_available_with_students`
+-- Placeholder table for view `LINQ`.`vw_Subjects_available_with_students`
 -- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `LINQ`.`Subjects_available_with_students` (`idSubjects` INT, `Subject_title` INT, `idStudents` INT, `Student_fname` INT, `Student_lname` INT, `Student_mid_initial` INT, `Student_email` INT, `Student_phone` INT, `Year_group` INT);
+CREATE TABLE IF NOT EXISTS `LINQ`.`vw_Subjects_available_with_students` (`idSubjects` INT, `Subject_title` INT, `idStudents` INT, `Student_number` INT, `Student_fname` INT, `Student_lname` INT, `Student_mid_initial` INT, `Student_email` INT, `Student_phone` INT, `Year_group` INT);
 
 -- -----------------------------------------------------
--- Placeholder table for view `LINQ`.`Academic_classes_present`
+-- Placeholder table for view `LINQ`.`vw_Academic_classes`
 -- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `LINQ`.`Academic_classes_present` (`idSubjects_Teachers_group` INT, `Subject_class_name` INT, `Subjects_id` INT, `Teachers_id` INT, `idTeachers` INT, `Teacher_fname` INT, `Teacher_lname` INT, `Form_group_name` INT, `Teacher_work_email` INT, `Teacher_phone` INT, `idSubjects` INT, `Subject_title` INT);
+CREATE TABLE IF NOT EXISTS `LINQ`.`vw_Academic_classes` (`idSubjects_Teachers_group` INT, `Subject_class_name` INT, `Subjects_id` INT, `Teachers_id` INT, `idTeachers` INT, `Teacher_fname` INT, `Teacher_lname` INT, `Form_group_name` INT, `Teacher_work_email` INT, `Teacher_phone` INT, `idSubjects` INT, `Subject_title` INT);
 
 -- -----------------------------------------------------
--- Placeholder table for view `LINQ`.`Teachers_list`
+-- Placeholder table for view `LINQ`.`vw_Teachers_list`
 -- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `LINQ`.`Teachers_list` (`idTeachers` INT, `Teacher_fname` INT, `Teacher_lname` INT, `Form_group_name` INT, `Teacher_work_email` INT, `Teacher_phone` INT);
+CREATE TABLE IF NOT EXISTS `LINQ`.`vw_Teachers_list` (`idTeachers` INT, `Teacher_fname` INT, `Teacher_lname` INT, `Form_group_name` INT, `Teacher_work_email` INT, `Teacher_phone` INT);
 
 -- -----------------------------------------------------
--- Placeholder table for view `LINQ`.`Students_personal_data`
+-- Placeholder table for view `LINQ`.`vw_Students_personal_data`
 -- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `LINQ`.`Students_personal_data` (`idStudents` INT, `Student_fname` INT, `Student_lname` INT, `Student_mid_initial` INT, `Student_email` INT, `Student_phone` INT, `Year_group` INT, `idGuardians` INT, `Students_id` INT, `Guardian_fname` INT, `Guardian_lname` INT, `Guardian_phone` INT, `Guardian_email` INT, `Guardian_2nd_email` INT, `Gaurdian_2nd_phone` INT, `idGuardians_addresses` INT, `Addressee_fname` INT, `Addressee_lname` INT, `First_line` INT, `Second_line` INT, `County_State` INT, `Postcode_ZIPcode` INT, `Country` INT, `Guardians_id` INT);
+CREATE TABLE IF NOT EXISTS `LINQ`.`vw_Students_personal_data` (`idStudents` INT, `Student_number` INT, `Student_fname` INT, `Student_lname` INT, `Student_mid_initial` INT, `Student_email` INT, `Student_phone` INT, `Year_group` INT, `idGuardians` INT, `Students_id` INT, `Guardian_fname` INT, `Guardian_lname` INT, `Guardian_phone` INT, `Guardian_email` INT, `Guardian_2nd_email` INT, `Gaurdian_2nd_phone` INT, `idGuardians_addresses` INT, `Addressee_fname` INT, `Addressee_lname` INT, `First_line` INT, `Second_line` INT, `County_State` INT, `Postcode_ZIPcode` INT, `Country` INT, `Guardians_id` INT);
 
 -- -----------------------------------------------------
--- Placeholder table for view `LINQ`.`Assignments_on_record`
+-- Placeholder table for view `LINQ`.`vw_Assignments_on_record`
 -- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `LINQ`.`Assignments_on_record` (`idAssignments_info` INT, `assignment_title` INT, `assignment_detail` INT, `max_raw_score` INT, `type_of_assessment` INT, `teachers_instruction` INT, `idAssignments_teacher_info` INT, `assignment_entry_date` INT, `add_to_average` INT, `teachers_id` INT);
+CREATE TABLE IF NOT EXISTS `LINQ`.`vw_Assignments_on_record` (`idAssignments_info` INT, `assignment_title` INT, `assignment_detail` INT, `max_raw_score` INT, `type_of_assessment` INT, `teachers_instruction` INT, `idAssignments_teacher_info` INT, `assignment_entry_date` INT, `add_to_average` INT, `teachers_id` INT);
 
 -- -----------------------------------------------------
--- Placeholder table for view `LINQ`.`Assignments_with_thresholds`
+-- Placeholder table for view `LINQ`.`vw_Assignments_with_thresholds`
 -- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `LINQ`.`Assignments_with_thresholds` (`idAssignments_info` INT, `Assignment_title` INT, `assignment_detail` INT, `max_raw_score` INT, `type_of_assessment` INT, `teachers_instruction` INT, `assignment_entry_date` INT, `add_to_average` INT, `teachers_id` INT, `threshold_note` INT, `letter_grade_note` INT, `Highest_raw` INT, `highest_char` INT, `high1_raw` INT, `high1_char` INT, `high2_raw` INT, `high2_char` INT, `high3_raw` INT, `high3_char` INT, `high4_raw` INT, `high4_char` INT, `high5_raw` INT, `high5_char` INT, `high6_raw` INT, `high6_char` INT, `high7_raw` INT, `high7_char` INT, `high8_raw` INT, `high8_char` INT, `high9_raw` INT, `high9_char` INT, `high10_raw` INT, `high10_char` INT, `high11_raw` INT, `high11_char` INT, `high12_raw` INT, `high12_char` INT, `high13_raw` INT, `high13_char` INT, `high14_raw` INT, `high14_char` INT, `high15_raw` INT, `high15_char` INT, `high16_raw` INT, `high16_char` INT, `high17_raw` INT, `high17_char` INT, `lowest_raw` INT, `lowest_char` INT);
+CREATE TABLE IF NOT EXISTS `LINQ`.`vw_Assignments_with_thresholds` (`idAssignments_info` INT, `Assignment_title` INT, `assignment_detail` INT, `max_raw_score` INT, `type_of_assessment` INT, `teachers_instruction` INT, `assignment_entry_date` INT, `add_to_average` INT, `teachers_id` INT, `threshold_note` INT, `letter_grade_note` INT, `Highest_raw` INT, `highest_char` INT, `high1_raw` INT, `high1_char` INT, `high2_raw` INT, `high2_char` INT, `high3_raw` INT, `high3_char` INT, `high4_raw` INT, `high4_char` INT, `high5_raw` INT, `high5_char` INT, `high6_raw` INT, `high6_char` INT, `high7_raw` INT, `high7_char` INT, `high8_raw` INT, `high8_char` INT, `high9_raw` INT, `high9_char` INT, `high10_raw` INT, `high10_char` INT, `high11_raw` INT, `high11_char` INT, `high12_raw` INT, `high12_char` INT, `high13_raw` INT, `high13_char` INT, `high14_raw` INT, `high14_char` INT, `high15_raw` INT, `high15_char` INT, `high16_raw` INT, `high16_char` INT, `high17_raw` INT, `high17_char` INT, `lowest_raw` INT, `lowest_char` INT);
 
 -- -----------------------------------------------------
--- Placeholder table for view `LINQ`.`Assignments_with_scores`
+-- Placeholder table for view `LINQ`.`vw_Assignments_with_scores`
 -- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `LINQ`.`Assignments_with_scores` (`idStudents` INT, `student_fname` INT, `student_mid_initial` INT, `student_lname` INT, `student_email` INT, `student_phone` INT, `year_group` INT, `comments_for_guardian` INT, `comments_for_staff` INT, `raw_score` INT, `idAssignments_info` INT, `assignment_title` INT, `assignment_detail` INT, `max_raw_score` INT, `type_of_assessment` INT, `teachers_instruction` INT, `assignment_entry_date` INT, `add_to_average` INT, `idTeachers` INT, `teacher_fname` INT, `teacher_lname` INT, `form_group_name` INT, `teacher_work_email` INT, `teacher_phone` INT);
+CREATE TABLE IF NOT EXISTS `LINQ`.`vw_Assignments_with_scores` (`idStudents` INT, `student_number` INT, `student_fname` INT, `student_mid_initial` INT, `student_lname` INT, `student_email` INT, `student_phone` INT, `year_group` INT, `comments_for_guardian` INT, `comments_for_staff` INT, `raw_score` INT, `idAssignments_info` INT, `assignment_title` INT, `assignment_detail` INT, `max_raw_score` INT, `type_of_assessment` INT, `teachers_instruction` INT, `assignment_entry_date` INT, `add_to_average` INT, `idTeachers` INT, `teacher_fname` INT, `teacher_lname` INT, `form_group_name` INT, `teacher_work_email` INT, `teacher_phone` INT);
 
 -- -----------------------------------------------------
--- Placeholder table for view `LINQ`.`Assignments_with_scores_and_grades`
+-- Placeholder table for view `LINQ`.`vw_Assignments_with_scores_and_grades`
 -- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `LINQ`.`Assignments_with_scores_and_grades` (`idStudents` INT, `student_fname` INT, `student_mid_initial` INT, `student_lname` INT, `student_email` INT, `student_phone` INT, `year_group` INT, `comments_for_guardian` INT, `comments_for_staff` INT, `raw_score` INT, `idAssignments_info` INT, `assignment_title` INT, `assignment_detail` INT, `max_raw_score` INT, `type_of_assessment` INT, `teachers_instruction` INT, `assignment_entry_date` INT, `add_to_average` INT, `idTeachers` INT, `teacher_fname` INT, `teacher_lname` INT, `form_group_name` INT, `teacher_work_email` INT, `teacher_phone` INT, `'Grade'` INT);
+CREATE TABLE IF NOT EXISTS `LINQ`.`vw_Assignments_with_scores_and_grades` (`idStudents` INT, `student_number` INT, `student_fname` INT, `student_mid_initial` INT, `student_lname` INT, `student_email` INT, `student_phone` INT, `year_group` INT, `comments_for_guardian` INT, `comments_for_staff` INT, `raw_score` INT, `idAssignments_info` INT, `assignment_title` INT, `assignment_detail` INT, `max_raw_score` INT, `type_of_assessment` INT, `teachers_instruction` INT, `assignment_entry_date` INT, `add_to_average` INT, `idTeachers` INT, `teacher_fname` INT, `teacher_lname` INT, `form_group_name` INT, `teacher_work_email` INT, `teacher_phone` INT, `'Grade'` INT);
 
 -- -----------------------------------------------------
--- Placeholder table for view `LINQ`.`Students_assignments_grades`
+-- Placeholder table for view `LINQ`.`vw_Students_assignments_grades`
 -- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `LINQ`.`Students_assignments_grades` (`idStudents` INT, `student_fname` INT, `student_mid_initial` INT, `student_lname` INT, `student_email` INT, `student_phone` INT, `year_group` INT, `comments_for_guardian` INT, `comments_for_staff` INT, `raw_score` INT, `idAssignments_info` INT, `assignment_title` INT, `assignment_detail` INT, `max_raw_score` INT, `type_of_assessment` INT, `teachers_instruction` INT, `'Grade'` INT);
+CREATE TABLE IF NOT EXISTS `LINQ`.`vw_Students_assignments_grades` (`idStudents` INT, `student_number` INT, `student_fname` INT, `student_mid_initial` INT, `student_lname` INT, `student_email` INT, `student_phone` INT, `year_group` INT, `comments_for_guardian` INT, `comments_for_staff` INT, `raw_score` INT, `idAssignments_info` INT, `assignment_title` INT, `assignment_detail` INT, `max_raw_score` INT, `type_of_assessment` INT, `teachers_instruction` INT, `'Grade'` INT);
 
 -- -----------------------------------------------------
--- Placeholder table for view `LINQ`.`Students_assignments_grades_min`
+-- Placeholder table for view `LINQ`.`vw_Students_assignments_grades_min`
 -- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `LINQ`.`Students_assignments_grades_min` (`idStudents` INT, `student_fname` INT, `student_mid_initial` INT, `student_lname` INT, `student_email` INT, `assignment_title` INT, `max_raw_score` INT, `raw_score` INT, `'Grade'` INT, `type_of_assessment` INT, `comments_for_guardian` INT, `comments_for_staff` INT);
+CREATE TABLE IF NOT EXISTS `LINQ`.`vw_Students_assignments_grades_min` (`idStudents` INT, `student_number` INT, `student_fname` INT, `student_mid_initial` INT, `student_lname` INT, `student_email` INT, `assignment_title` INT, `max_raw_score` INT, `raw_score` INT, `'Grade'` INT, `type_of_assessment` INT, `comments_for_guardian` INT, `comments_for_staff` INT);
 
 -- -----------------------------------------------------
--- View `LINQ`.`Form_group_list`
+-- View `LINQ`.`vw_Form_group_list`
 -- -----------------------------------------------------
-DROP TABLE IF EXISTS `LINQ`.`Form_group_list`;
+DROP TABLE IF EXISTS `LINQ`.`vw_Form_group_list`;
 USE `LINQ`;
-CREATE  OR REPLACE VIEW `Form_group_list` AS
+CREATE  OR REPLACE VIEW `vw_Form_group_list` AS
     SELECT 
         *
     FROM
@@ -472,11 +493,11 @@ CREATE  OR REPLACE VIEW `Form_group_list` AS
         tblForm_groups.students_id = idStudents;
 
 -- -----------------------------------------------------
--- View `LINQ`.`Academic_classes_with_students`
+-- View `LINQ`.`vw_Academic_classes_with_students`
 -- -----------------------------------------------------
-DROP TABLE IF EXISTS `LINQ`.`Academic_classes_with_students`;
+DROP TABLE IF EXISTS `LINQ`.`vw_Academic_classes_with_students`;
 USE `LINQ`;
-CREATE  OR REPLACE VIEW `Academic_classes_with_students` AS
+CREATE  OR REPLACE VIEW `vw_Academic_classes_with_students` AS
     SELECT 
         *
     FROM
@@ -491,27 +512,27 @@ CREATE  OR REPLACE VIEW `Academic_classes_with_students` AS
         tblSubjects ON tblSubjects_teachers_groups.subjects_id = idSubjects;
 
 -- -----------------------------------------------------
--- View `LINQ`.`Subjects_available`
+-- View `LINQ`.`vw_Subjects_available`
 -- -----------------------------------------------------
-DROP TABLE IF EXISTS `LINQ`.`Subjects_available`;
+DROP TABLE IF EXISTS `LINQ`.`vw_Subjects_available`;
 USE `LINQ`;
-CREATE  OR REPLACE VIEW `Subjects_available` AS
+CREATE  OR REPLACE VIEW `vw_Subjects_available` AS
 select * from tblSubjects left join tblstudents_subjects on idSubjects = tblStudents_Subjects.subjects_id;
 
 -- -----------------------------------------------------
--- View `LINQ`.`Subjects_available_with_students`
+-- View `LINQ`.`vw_Subjects_available_with_students`
 -- -----------------------------------------------------
-DROP TABLE IF EXISTS `LINQ`.`Subjects_available_with_students`;
+DROP TABLE IF EXISTS `LINQ`.`vw_Subjects_available_with_students`;
 USE `LINQ`;
-CREATE  OR REPLACE VIEW `Subjects_available_with_students` AS
+CREATE  OR REPLACE VIEW `vw_Subjects_available_with_students` AS
 select * from tblSubjects left join tblstudents_subjects on idSubjects = tblStudents_Subjects.subjects_id left join tblStudents on tblStudents_Subjects.students_id = idStudents;
 
 -- -----------------------------------------------------
--- View `LINQ`.`Academic_classes_present`
+-- View `LINQ`.`vw_Academic_classes`
 -- -----------------------------------------------------
-DROP TABLE IF EXISTS `LINQ`.`Academic_classes_present`;
+DROP TABLE IF EXISTS `LINQ`.`vw_Academic_classes`;
 USE `LINQ`;
-CREATE  OR REPLACE VIEW `Academic_classes_present` AS
+CREATE  OR REPLACE VIEW `vw_Academic_classes` AS
     SELECT 
         *
     FROM
@@ -522,22 +543,22 @@ CREATE  OR REPLACE VIEW `Academic_classes_present` AS
         tblSubjects ON tblSubjects_teachers_groups.subjects_id = idSubjects;
 
 -- -----------------------------------------------------
--- View `LINQ`.`Teachers_list`
+-- View `LINQ`.`vw_Teachers_list`
 -- -----------------------------------------------------
-DROP TABLE IF EXISTS `LINQ`.`Teachers_list`;
+DROP TABLE IF EXISTS `LINQ`.`vw_Teachers_list`;
 USE `LINQ`;
-CREATE  OR REPLACE VIEW `Teachers_list` AS
+CREATE  OR REPLACE VIEW `vw_Teachers_list` AS
     SELECT 
         *
     FROM
         tblTeachers;
 
 -- -----------------------------------------------------
--- View `LINQ`.`Students_personal_data`
+-- View `LINQ`.`vw_Students_personal_data`
 -- -----------------------------------------------------
-DROP TABLE IF EXISTS `LINQ`.`Students_personal_data`;
+DROP TABLE IF EXISTS `LINQ`.`vw_Students_personal_data`;
 USE `LINQ`;
-CREATE  OR REPLACE VIEW `Students_personal_data` AS
+CREATE  OR REPLACE VIEW `vw_Students_personal_data` AS
     SELECT 
         *
     FROM
@@ -548,11 +569,11 @@ CREATE  OR REPLACE VIEW `Students_personal_data` AS
         tblGuardians_addresses ON Guardians_id = idGuardians;
 
 -- -----------------------------------------------------
--- View `LINQ`.`Assignments_on_record`
+-- View `LINQ`.`vw_Assignments_on_record`
 -- -----------------------------------------------------
-DROP TABLE IF EXISTS `LINQ`.`Assignments_on_record`;
+DROP TABLE IF EXISTS `LINQ`.`vw_Assignments_on_record`;
 USE `LINQ`;
-CREATE  OR REPLACE VIEW `Assignments_on_record` AS
+CREATE  OR REPLACE VIEW `vw_Assignments_on_record` AS
     SELECT 
         idAssignments_info,
         assignment_title,
@@ -570,11 +591,11 @@ CREATE  OR REPLACE VIEW `Assignments_on_record` AS
         tblAssignments_teacher_info ON tblAssignments_teacher_info.assignments_info_id = idAssignments_info;
 
 -- -----------------------------------------------------
--- View `LINQ`.`Assignments_with_thresholds`
+-- View `LINQ`.`vw_Assignments_with_thresholds`
 -- -----------------------------------------------------
-DROP TABLE IF EXISTS `LINQ`.`Assignments_with_thresholds`;
+DROP TABLE IF EXISTS `LINQ`.`vw_Assignments_with_thresholds`;
 USE `LINQ`;
-CREATE  OR REPLACE VIEW `Assignments_with_thresholds` AS
+CREATE  OR REPLACE VIEW `vw_Assignments_with_thresholds` AS
     SELECT 
         idAssignments_info,
         Assignment_title,
@@ -637,13 +658,14 @@ CREATE  OR REPLACE VIEW `Assignments_with_thresholds` AS
         tblLetter_grade_chars ON Letter_grade_chars_id = idLetter_grade_chars;
 
 -- -----------------------------------------------------
--- View `LINQ`.`Assignments_with_scores`
+-- View `LINQ`.`vw_Assignments_with_scores`
 -- -----------------------------------------------------
-DROP TABLE IF EXISTS `LINQ`.`Assignments_with_scores`;
+DROP TABLE IF EXISTS `LINQ`.`vw_Assignments_with_scores`;
 USE `LINQ`;
-CREATE  OR REPLACE VIEW `Assignments_with_scores` AS
+CREATE  OR REPLACE VIEW `vw_Assignments_with_scores` AS
 SELECT 
     idStudents,
+    student_number,
     student_fname,
     student_mid_initial,
     student_lname,
@@ -679,13 +701,14 @@ FROM
     tblTeachers ON idTeachers = tblAssignments_teacher_info.teachers_id;
 
 -- -----------------------------------------------------
--- View `LINQ`.`Assignments_with_scores_and_grades`
+-- View `LINQ`.`vw_Assignments_with_scores_and_grades`
 -- -----------------------------------------------------
-DROP TABLE IF EXISTS `LINQ`.`Assignments_with_scores_and_grades`;
+DROP TABLE IF EXISTS `LINQ`.`vw_Assignments_with_scores_and_grades`;
 USE `LINQ`;
-CREATE  OR REPLACE VIEW `Assignments_with_scores_and_grades` AS
+CREATE  OR REPLACE VIEW `vw_Assignments_with_scores_and_grades` AS
     SELECT 
         idStudents,
+        student_number,
         student_fname,
         student_mid_initial,
         student_lname,
@@ -750,13 +773,14 @@ CREATE  OR REPLACE VIEW `Assignments_with_scores_and_grades` AS
         tblLetter_grade_chars ON letter_grade_chars_id = idLetter_grade_chars;
 
 -- -----------------------------------------------------
--- View `LINQ`.`Students_assignments_grades`
+-- View `LINQ`.`vw_Students_assignments_grades`
 -- -----------------------------------------------------
-DROP TABLE IF EXISTS `LINQ`.`Students_assignments_grades`;
+DROP TABLE IF EXISTS `LINQ`.`vw_Students_assignments_grades`;
 USE `LINQ`;
-CREATE  OR REPLACE VIEW `Students_assignments_grades` AS
+CREATE  OR REPLACE VIEW `vw_Students_assignments_grades` AS
 SELECT 
         idStudents,
+        student_number,
         student_fname,
         student_mid_initial,
         student_lname,
@@ -809,13 +833,14 @@ SELECT
         tblLetter_grade_chars ON letter_grade_chars_id = idLetter_grade_chars;
 
 -- -----------------------------------------------------
--- View `LINQ`.`Students_assignments_grades_min`
+-- View `LINQ`.`vw_Students_assignments_grades_min`
 -- -----------------------------------------------------
-DROP TABLE IF EXISTS `LINQ`.`Students_assignments_grades_min`;
+DROP TABLE IF EXISTS `LINQ`.`vw_Students_assignments_grades_min`;
 USE `LINQ`;
-CREATE  OR REPLACE VIEW `Students_assignments_grades_min` AS
+CREATE  OR REPLACE VIEW `vw_Students_assignments_grades_min` AS
     SELECT 
         idStudents,
+        student_number,
         student_fname,
         student_mid_initial,
         student_lname,
@@ -865,3 +890,137 @@ CREATE  OR REPLACE VIEW `Students_assignments_grades_min` AS
 SET SQL_MODE=@OLD_SQL_MODE;
 SET FOREIGN_KEY_CHECKS=@OLD_FOREIGN_KEY_CHECKS;
 SET UNIQUE_CHECKS=@OLD_UNIQUE_CHECKS;
+
+-- -----------------------------------------------------
+-- Data for table `LINQ`.`tblLINQ_users`
+-- -----------------------------------------------------
+START TRANSACTION;
+USE `LINQ`;
+INSERT INTO `LINQ`.`tblLINQ_users` (`idLINQ_users`, `user_fname`, `user_lname`, `LINQ_username`, `LINQ_pw`, `LINQ_useremail`, `LINQ_lastlogin`) VALUES (1, 'James', 'Apps', 'japps', 'japps', 'japps@somewhere.com', '2020-04-20');
+
+COMMIT;
+
+-- begin attached script 'script'
+-- this may need removing on first run since an error is given if DROP fails
+DROP USER 'LINQ_admin'@'localhost';
+
+USE LINQ;
+-- CREATE USER username IDENTIFIED BY password
+
+-- add the LINQ-server admin (change the password as desired)
+-- it is strongly advised to specifiy the host, either locally with @localhost or remotely, with @ip_address_of_server
+
+CREATE USER 'LINQ_admin'@'localhost' IDENTIFIED BY 'adminpassword';
+
+-- grant privileges to the administrator (perform queries, and edit records) and allow the administrator to grant the same privileges to other users
+
+GRANT SELECT, INSERT, UPDATE, DELETE ON linq.* TO 'LINQ_admin'@'localhost' WITH GRANT OPTION;
+-- end attached script 'script'
+-- begin attached script 'script1'
+USE linq;
+
+/*
+This script sets up the database with random, fake entries
+Note the order that these scripts are processed matters since foreign keys must be set after primary keys have been set.
+
+Due to foreign key constraints, the order of INSERTing 
+data should be as follows:
+
+1. Students
+2. (In no particular order) Guardians, Subjects and Teachers
+3. (In no particular order) Guardians_addresses, Subject_Subjects, 
+Form_groups, Subject_Teachers_groups and Student_reports
+4. Academic_classes
+
+Once the basic school admin is entered, teachers can then begin entering 
+assignments related data:
+
+5. Assignments_info
+6. (In no particular order) Assignments_teacher_info, Grade_thresholds,
+Letter_grade_chars and Student_Assignments
+7. Grading Groups
+*/
+
+-- PART 1 -------------------------------------------------------------------------------------------------------------------
+INSERT INTO tblStudents(Student_fname, Student_lname, Student_mid_initial, Student_email, Student_phone)
+VALUES('James', 'Bob', 'T', 'jamesbob@email.com', '02973432'),
+('Jane', 'Bob', 'L M', 'jane12432@email.com', '534534'),
+('Tim', 'Tom', '', 'timetomtam@tim.co.uk', '2039402934'),
+('Jake', 'Josh', 'P S', 'whizbang@pop.com', '353453453'),
+('Chris', 'Smith', 'O', 'chris@someplace.com', '029347823'),
+('Jill', 'Jungle', 'E', 'Jill93@email.net', '230493894'),
+('Sam', 'Dodds', 'A', 'samdodds21@threo.net', '123097234');
+
+-- PART 2 -------------------------------------------------------------------------------------------------------------------
+INSERT INTO tblGuardians(guardian_fname, guardian_lname, guardian_phone, guardian_email, guardian_2nd_email, students_id) 
+VALUES('Frank', 'Bob', '2342523', 'fbob245@email.com', 'paosih@apsoih', 1),
+('Frank', 'Bob', '2342523', 'fbob245@email.com', 'paosih@apsoih', 2),
+('Amy', 'Josh', '343534345', 'ajosh22@email.com', 'oaihsd@asfh', 4),
+('Joyce', 'Tom', '23454323245', 'joyce33ok@email.com', 'opasih@aspoidh', 3),
+('Samuel', 'Smith', '23452354', 'samsmith@torr.net', 'oiashd@aspodih', 5),
+('David', 'Jungle', '2346435', 'DaveJ39595@email.com', 'opaish@aopsih', 6),
+('Don', 'Dodds', '234523423', 'quack2345@somewhere.com', 'aosidh@asopid', 7);
+
+INSERT INTO tblTeachers(Teacher_fname, Teacher_lname, form_group_name, Teacher_work_email, Teacher_phone) VALUES
+('Edward', 'Jones', 'EJ7', 'edwardj@someschool.com', '2342345'),
+('Emily', 'Ford', 'EF8', 'emilyf@someschool.com', '2354234');
+
+INSERT INTO tblSubjects(subject_title) VALUES
+('Math'), ('English'), ('Science');
+
+-- PART 3 -------------------------------------------------------------------------------------------------------------------
+INSERT INTO tblGuardians_addresses(first_line, county_state, postcode_zipcode, country, guardians_id) 
+VALUES('11 Hope St', 'London', 'EJ6', 'UK', 1),
+('11 Hope St', 'London', 'EJ6', 'UK', 2),
+('104 Canal avenue', 'Lancs', 'dunno', 'UK', 3),
+('Flat 8A Block 3, somewhere', 'Hunts', 'tbc', 'UK', 4),
+('Cheddar, Alders Grove, Inverness', 'Inverness', 'dunno2', 'UK', 5),
+('No. 88, Embers Way, Leamington', 'Warwickshire', 'FS33', 'UK', 6),
+('All Saints, Torquay Way, Torquay', 'Devonshire', 'DV73', 'UK', 7);
+
+INSERT INTO tblStudents_subjects(students_id, subjects_id) VALUES
+(1, 1), (2, 1), (3, 1), (4, 2), (5, 2), (6, 2), (7, 2);
+
+INSERT INTO tblForm_groups(teachers_id, students_id) VALUES
+(1, 1), (1, 3), (1, 5), (1, 7),
+(2, 2), (2, 4), (2, 6);
+
+INSERT INTO tblSubjects_teachers_groups(subject_class_name, subjects_id, teachers_id) VALUES
+('Mathtastic', 1, 2), ('Englooosh', 2, 1);
+
+-- PART 4 -------------------------------------------------------------------------------------------------------------------
+INSERT INTO tblAcademic_classes(subjects_teachers_groups_id, students_id)
+VALUES(1, 1), (1, 2), (1, 3), (2, 4), (2, 5), (2, 6), (2, 7);
+
+-- PART 5 -------------------------------------------------------------------------------------------------------------------
+
+INSERT INTO tblAssignments_info(assignment_title, assignment_detail, max_raw_score, type_of_assessment) 
+VALUES('The makings of King Arthur', 'An essay focusing on something', 25, 'C'),
+('Taming the shrew', 'Comparing film and book', 32, 'C'),
+('Prep test for Calc 1', 'prep test', 70, 'T'),
+('Calc 1 exam', 'end of term exam', 70, 'E');
+
+-- PART 6 -------------------------------------------------------------------------------------------------------------------
+INSERT INTO tblAssignments_teacher_info(assignment_entry_date, add_to_average, assignments_info_id, teachers_id)
+VALUES('2020-07-27', 1, 1, 1),
+('2020-07-28', 1, 2, 1),
+('2020-07-27', 1, 3, 2),
+('2020-07-28', 1, 4, 2);
+
+INSERT INTO tblGrade_thresholds(Highest_raw, High1_raw, High2_raw, High3_raw, Lowest_raw)
+VALUES (23, 20, 18, 15, 13), (30, 28, 26, 24, 20), (65, 60, 55, 50, 45), (65, 60, 55, 50, 45);
+
+INSERT INTO tblLetter_grade_chars(Highest_char, High1_char, High2_char, High3_char, Lowest_char)
+VALUES ('A', 'B', 'C', 'D', 'E'), ('a', 'b', 'c', 'd', 'e');
+
+INSERT INTO tblStudent_assignments(assignments_info_id, raw_score, students_id) 
+VALUES(1, 20, 4), (1, 21, 5), (1, 18, 6), (1, 19, 7),
+(2, 25, 4), (2, 27, 5), (2, 20, 6), (2, 30, 7),
+(3, 55, 1), (3, 40, 2), (3, 60, 3),
+(4, 60, 1), (4, 45, 2), (4, 66, 3);
+
+-- PART 7 -------------------------------------------------------------------------------------------------------------------
+INSERT INTO tblGrading_groups(assignments_info_id, grade_thresholds_id, letter_grade_chars_id) VALUES(1, 1, 1), (2, 2, 1), (3, 3, 2), (4, 4, 2);
+
+
+-- end attached script 'script1'

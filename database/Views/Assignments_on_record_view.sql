@@ -1,4 +1,4 @@
-CREATE VIEW `Assignments_on_record` AS
+CREATE VIEW `vw_Assignments_on_record` AS
     SELECT 
         idAssignments_info,
         assignment_title,

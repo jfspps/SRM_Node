@@ -1,4 +1,4 @@
-CREATE VIEW `Assignments_with_thresholds` AS
+CREATE VIEW `vw_Assignments_with_thresholds` AS
     SELECT 
         idAssignments_info,
         Assignment_title,
