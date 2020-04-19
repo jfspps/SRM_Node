@@ -1,6 +1,7 @@
 CREATE VIEW `Students_assignments_grades_min` AS
     SELECT 
         idStudents,
+        student_number,
         student_fname,
         student_mid_initial,
         student_lname,
