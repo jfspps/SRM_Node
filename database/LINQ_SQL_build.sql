@@ -51,7 +51,7 @@ CREATE TABLE IF NOT EXISTS `LINQ`.`tblGuardians` (
   CONSTRAINT `Student_id`
     FOREIGN KEY (`Students_id`)
     REFERENCES `LINQ`.`tblStudents` (`idStudents`)
-    ON DELETE NO ACTION
+    ON DELETE CASCADE
     ON UPDATE NO ACTION)
 ENGINE = InnoDB;
 
@@ -118,15 +118,15 @@ CREATE TABLE IF NOT EXISTS `LINQ`.`tblAcademic_classes` (
   INDEX `fk_Subjects_Teachers_group_has_Students_Subjects_Teachers_g_idx` (`Subjects_Teachers_groups_id` ASC) VISIBLE,
   PRIMARY KEY (`idAcademic_classes`),
   UNIQUE INDEX `idAcademic_class_UNIQUE` (`idAcademic_classes` ASC) VISIBLE,
-  CONSTRAINT `fk_Subjects_Teachers_group_has_Students_Subjects_Teachers_gro1`
+  CONSTRAINT `Subjects_Teachers_groups_id`
     FOREIGN KEY (`Subjects_Teachers_groups_id`)
     REFERENCES `LINQ`.`tblSubjects_Teachers_groups` (`idSubjects_Teachers_group`)
     ON DELETE NO ACTION
     ON UPDATE NO ACTION,
-  CONSTRAINT `fk_Subjects_Teachers_group_has_Students_Students1`
+  CONSTRAINT `AC_Students_id`
     FOREIGN KEY (`Students_id`)
     REFERENCES `LINQ`.`tblStudents` (`idStudents`)
-    ON DELETE NO ACTION
+    ON DELETE CASCADE
     ON UPDATE NO ACTION)
 ENGINE = InnoDB;
 
@@ -150,7 +150,7 @@ CREATE TABLE IF NOT EXISTS `LINQ`.`tblForm_groups` (
   CONSTRAINT `Student_id_form_group`
     FOREIGN KEY (`Students_id`)
     REFERENCES `LINQ`.`tblStudents` (`idStudents`)
-    ON DELETE NO ACTION
+    ON DELETE CASCADE
     ON UPDATE NO ACTION)
 ENGINE = InnoDB;
 
@@ -178,7 +178,7 @@ CREATE TABLE IF NOT EXISTS `LINQ`.`tblAssignments_teacher_info` (
   `Assignment_entry_date` DATE NOT NULL,
   `Add_to_average` TINYINT NOT NULL DEFAULT 1 COMMENT 'Set to zero if this assignment should not contribute to the cumulative average but remain on the DB. All non-zero values are considered TRUE',
   `Assignments_info_id` INT NOT NULL,
-  `Teachers_id` INT NOT NULL COMMENT 'If the teacher leaves then Teacher_id (a FK) is set to NULL',
+  `Teachers_id` INT NULL COMMENT 'This FK can be NULL so that when a teacher is removed from the database, the assignment scores and other details are retained for review/evaluation purposes',
   PRIMARY KEY (`idAssignments_teacher_info`),
   UNIQUE INDEX `idTeacher_assignments_UNIQUE` (`idAssignments_teacher_info` ASC) VISIBLE,
   INDEX `Assignment_id_sub_idx` (`Assignments_info_id` ASC) VISIBLE,
@@ -191,7 +191,7 @@ CREATE TABLE IF NOT EXISTS `LINQ`.`tblAssignments_teacher_info` (
   CONSTRAINT `Teacher_id_sub`
     FOREIGN KEY (`Teachers_id`)
     REFERENCES `LINQ`.`tblTeachers` (`idTeachers`)
-    ON DELETE NO ACTION
+    ON DELETE SET NULL
     ON UPDATE NO ACTION)
 ENGINE = InnoDB;
 
@@ -205,7 +205,7 @@ CREATE TABLE IF NOT EXISTS `LINQ`.`tblStudent_assignments` (
   `Comments_for_guardian` VARCHAR(300) NULL,
   `Comments_for_staff` VARCHAR(300) NULL,
   `Raw_score` INT NULL COMMENT 'Allow NULL for students who were absent (ignored when average is tallied)',
-  `Students_id` INT NOT NULL,
+  `Students_id` INT NULL COMMENT 'This FK can be NULL so that when a student is removed from the database, the assignment scores and other details are retained for review/evaluation purposes',
   PRIMARY KEY (`idStudent_assignments`, `Assignments_info_id`),
   UNIQUE INDEX `idStudent_assignments_UNIQUE` (`idStudent_assignments` ASC) VISIBLE,
   INDEX `Assignment_id_idx` (`Assignments_info_id` ASC) VISIBLE,
@@ -218,7 +218,7 @@ CREATE TABLE IF NOT EXISTS `LINQ`.`tblStudent_assignments` (
   CONSTRAINT `Student_id_assignments`
     FOREIGN KEY (`Students_id`)
     REFERENCES `LINQ`.`tblStudents` (`idStudents`)
-    ON DELETE NO ACTION
+    ON DELETE SET NULL
     ON UPDATE NO ACTION)
 ENGINE = InnoDB;
 
@@ -327,10 +327,10 @@ CREATE TABLE IF NOT EXISTS `LINQ`.`tblStudents_Subjects` (
   INDEX `fk_Students_has_Subjects_Students1_idx` (`Students_id` ASC) VISIBLE,
   PRIMARY KEY (`idStudent_Subjects`),
   UNIQUE INDEX `idStudent_JUNC_Subjects_UNIQUE` (`idStudent_Subjects` ASC) VISIBLE,
-  CONSTRAINT `Students_id`
+  CONSTRAINT `SS_Students_id`
     FOREIGN KEY (`Students_id`)
     REFERENCES `LINQ`.`tblStudents` (`idStudents`)
-    ON DELETE NO ACTION
+    ON DELETE CASCADE
     ON UPDATE NO ACTION,
   CONSTRAINT `Subjects_id`
     FOREIGN KEY (`Subjects_id`)
@@ -345,8 +345,6 @@ ENGINE = InnoDB;
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `LINQ`.`tblGuardians_addresses` (
   `idGuardians_addresses` INT NOT NULL AUTO_INCREMENT,
-  `Addressee_fname` VARCHAR(45) NULL COMMENT 'LINQ defualts to Guardians_fname. This field is filled in for parents or guardians with different addresses',
-  `Addressee_lname` VARCHAR(45) NULL COMMENT 'LINQ defualts to Guardians_lname. This field is filled in for parents or guardians with different addresses',
   `First_line` VARCHAR(45) NOT NULL,
   `Second_line` VARCHAR(45) NULL,
   `County_State` VARCHAR(45) NULL,
@@ -378,10 +376,10 @@ CREATE TABLE IF NOT EXISTS `LINQ`.`tblStudent_reports` (
   UNIQUE INDEX `idStudent_report_UNIQUE` (`idStudent_reports` ASC) VISIBLE,
   INDEX `Student_id_report_idx` (`Students_id` ASC) VISIBLE,
   INDEX `Teacher_id_report_idx` (`Teachers_id` ASC) VISIBLE,
-  CONSTRAINT `Student_id_report`
+  CONSTRAINT `SR_Student_id_report`
     FOREIGN KEY (`Students_id`)
     REFERENCES `LINQ`.`tblStudents` (`idStudents`)
-    ON DELETE NO ACTION
+    ON DELETE CASCADE
     ON UPDATE NO ACTION,
   CONSTRAINT `Teacher_id_report`
     FOREIGN KEY (`Teachers_id`)
@@ -443,7 +441,7 @@ CREATE TABLE IF NOT EXISTS `LINQ`.`vw_Teachers_list` (`idTeachers` INT, `Teacher
 -- -----------------------------------------------------
 -- Placeholder table for view `LINQ`.`vw_Students_personal_data`
 -- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `LINQ`.`vw_Students_personal_data` (`idStudents` INT, `Student_number` INT, `Student_fname` INT, `Student_lname` INT, `Student_mid_initial` INT, `Student_email` INT, `Student_phone` INT, `Year_group` INT, `idGuardians` INT, `Students_id` INT, `Guardian_fname` INT, `Guardian_lname` INT, `Guardian_phone` INT, `Guardian_email` INT, `Guardian_2nd_email` INT, `Gaurdian_2nd_phone` INT, `idGuardians_addresses` INT, `Addressee_fname` INT, `Addressee_lname` INT, `First_line` INT, `Second_line` INT, `County_State` INT, `Postcode_ZIPcode` INT, `Country` INT, `Guardians_id` INT);
+CREATE TABLE IF NOT EXISTS `LINQ`.`vw_Students_personal_data` (`idStudents` INT, `Student_number` INT, `Student_fname` INT, `Student_lname` INT, `Student_mid_initial` INT, `Student_email` INT, `Student_phone` INT, `Year_group` INT, `idGuardians` INT, `Students_id` INT, `Guardian_fname` INT, `Guardian_lname` INT, `Guardian_phone` INT, `Guardian_email` INT, `Guardian_2nd_email` INT, `Gaurdian_2nd_phone` INT, `idGuardians_addresses` INT, `First_line` INT, `Second_line` INT, `County_State` INT, `Postcode_ZIPcode` INT, `Country` INT, `Guardians_id` INT);
 
 -- -----------------------------------------------------
 -- Placeholder table for view `LINQ`.`vw_Assignments_on_record`
