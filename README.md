@@ -81,9 +81,9 @@ When the pastoral and academic plans are entered, teachers can then begin enteri
 #### Bootstrap 4 interface (build independently) ####
 
 1. Display pages, showing all columns:
-    a. Personal data and school admin entry page
-    b. Assignment info entry page
-    c. Grade threshold entry page
+   a. Personal data and school admin entry page
+   b. Assignment info entry page
+   c. Grade threshold entry page
 2. Display pages, with options to select specific columns
 3. More display pages, showing all columns and then with options (as before), for the processing of students' results.*
 		
@@ -97,23 +97,23 @@ Apply the MySQL statements developed earlier and build a welcome page
 
 Develop NodeJS interface with ExcelJS to display, on the first worksheet:
 
-a. Student name
-b. Student email address
-c. Assignment info, raw score, percentage and letter grade
-d. Class average
++ Student name
++ Student email address
++ Assignment info, raw score, percentage and letter grade
++ Class average
 
 On a second worksheet:
 
-a. Student name
-b. Assignment info
-c. Difference between student average and class average (with colour code)
-d. Standard deviation
++ Student name
++ Assignment info
++ Difference between student average and class average (with colour code)
++ Standard deviation
 
 On the third worksheet:
 
-a. Student name
-b. Cumulative average by component
-c. Overall cumulative average and grade
++ Student name
++ Cumulative average by component
++ Overall cumulative average and grade
 
 Develop the worksheet further so that the user can select which elements to print and on which worksheet. See how the font size and number of characters influences the cell size...
 
