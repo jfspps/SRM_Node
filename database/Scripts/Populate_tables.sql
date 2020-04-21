@@ -1,4 +1,4 @@
-USE linq;
+USE SRM;
 
 /*
 This script sets up the database with random, fake entries
