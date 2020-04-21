@@ -1,13 +1,13 @@
-# LINQ #
-LINQ is a suite of applications which store and process academic data
+# SRM #
+SRM (student record management) is a suite of applications which store and process academic data
 
-__Requirements: NodeJS and MySQL__
+__Requirements: NodeJS 13 and MySQL 8__
 
 __Installation__
 
-1. Install both the latest versions of NodeJS and MySQL Workbench (community edition) on the server
+1. Install both the latest versions of NodeJS 13 and MySQL server 8 on a machine, here denoted as the server
 2. Setup admin account(s) on the MySQL server and perform additional security checks (removing defaults, setting up the firewall and SSH registration)
-3. Install LINQ-server and then add users with necessary privileges (admin user details are supplied)
+3. Install SRM-server and then add users with necessary privileges (admin user details are supplied)
 
 ## Development stages ##
 
@@ -15,6 +15,7 @@ __Installation__
 
 1. MySQL schema design and preparation
 2. NodeJS connections and simple record extraction via console
+
 3. Teacher authentication and authorisation testing
 
 Use the currently populated tables to verify students results processing the following:
@@ -43,25 +44,25 @@ When the pastoral and academic plans are entered, teachers can then begin enteri
 1. Personal data-entry and verification (check for duplication and NULL)
    a. Students' personal details
    b. Guardians personal details
-   c. How LINQ responds when either records are updated or deleted
+   c. How SRM responds when either records are updated or deleted
 
 2. Teacher data-entry and verification (check for duplication and NULL)
    a. Teacher work details
    b. Subjects on offer (including those not taken by any student)
-   c. How LINQ responds when either records are updated or deleted
+   c. How SRM responds when either records are updated or deleted
 
 3. Academic classes data-entry and verification (check for duplication and NULL)
    a. Assigning students and teachers to specific classes
-   b. How LINQ responds when either records are updated or deleted
+   b. How SRM responds when either records are updated or deleted
 
 #### Handling of assignment and threshold data entry ####
 	
 1. Assignment info data-entry and verification (check for duplication and NULL)
    a. Components of all types
    b. Couple assignment info with teachers
-   c. How LINQ responds when either records are updated or deleted
+   c. How SRM responds when either records are updated or deleted
 	
-2. Student assignment info (raw scores) upload and verification. How LINQ responds when either records are updated or deleted.
+2. Student assignment info (raw scores) upload and verification. How SRM responds when either records are updated or deleted.
 
 #### Handling of processing of students' scores* ####
 
@@ -81,9 +82,9 @@ When the pastoral and academic plans are entered, teachers can then begin enteri
 #### Bootstrap 4 interface (build independently) ####
 
 1. Display pages, showing all columns:
-    a. Personal data and school admin entry page
-    b. Assignment info entry page
-    c. Grade threshold entry page
+   a. Personal data and school admin entry page
+   b. Assignment info entry page
+   c. Grade threshold entry page
 2. Display pages, with options to select specific columns
 3. More display pages, showing all columns and then with options (as before), for the processing of students' results.*
 		
@@ -97,31 +98,31 @@ Apply the MySQL statements developed earlier and build a welcome page
 
 Develop NodeJS interface with ExcelJS to display, on the first worksheet:
 
-a. Student name
-b. Student email address
-c. Assignment info, raw score, percentage and letter grade
-d. Class average
++ Student name
++ Student email address
++ Assignment info, raw score, percentage and letter grade
++ Class average
 
 On a second worksheet:
 
-a. Student name
-b. Assignment info
-c. Difference between student average and class average (with colour code)
-d. Standard deviation
++ Student name
++ Assignment info
++ Difference between student average and class average (with colour code)
++ Standard deviation
 
 On the third worksheet:
 
-a. Student name
-b. Cumulative average by component
-c. Overall cumulative average and grade
++ Student name
++ Cumulative average by component
++ Overall cumulative average and grade
 
 Develop the worksheet further so that the user can select which elements to print and on which worksheet. See how the font size and number of characters influences the cell size...
 
-#### Other database-independent settings to save on LINQ-server ####
+#### Other database-independent settings to save on SRM-server ####
 
-Save above settings to a separate table in LINQ? Need to also store:
+Save above settings to a separate table in SRM? Need to also store:
 
-+ Academic term or semester start dates, including the start date of the following year (LINQ will default to one year after the first start date if not entered)
++ Academic term or semester start dates, including the start date of the following year (SRM will default to one year after the first start date if not entered)
 + Logging of MySQL access
 
 Most of the main objectives would be fulfilled at this stage. Future ideas include:

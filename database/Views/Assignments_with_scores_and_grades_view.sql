@@ -1,7 +1,7 @@
 CREATE VIEW `vw_Assignments_with_scores_and_grades` AS
     SELECT 
         idStudents,
-        student_number,
+        Student_reg_number,
         student_fname,
         student_mid_initial,
         student_lname,

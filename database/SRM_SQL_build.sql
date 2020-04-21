@@ -5,22 +5,25 @@ SET @OLD_FOREIGN_KEY_CHECKS=@@FOREIGN_KEY_CHECKS, FOREIGN_KEY_CHECKS=0;
 SET @OLD_SQL_MODE=@@SQL_MODE, SQL_MODE='ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION';
 
 -- -----------------------------------------------------
--- Schema LINQ
+-- Schema SRM
 -- -----------------------------------------------------
-DROP SCHEMA IF EXISTS `LINQ` ;
+-- Student Record Management SRM
+DROP SCHEMA IF EXISTS `SRM` ;
 
 -- -----------------------------------------------------
--- Schema LINQ
+-- Schema SRM
+--
+-- Student Record Management SRM
 -- -----------------------------------------------------
-CREATE SCHEMA IF NOT EXISTS `LINQ` DEFAULT CHARACTER SET utf8 ;
-USE `LINQ` ;
+CREATE SCHEMA IF NOT EXISTS `SRM` DEFAULT CHARACTER SET utf8 COLLATE utf8_bin ;
+USE `SRM` ;
 
 -- -----------------------------------------------------
--- Table `LINQ`.`tblStudents`
+-- Table `SRM`.`tblStudents`
 -- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `LINQ`.`tblStudents` (
+CREATE TABLE IF NOT EXISTS `SRM`.`tblStudents` (
   `idStudents` INT NOT NULL AUTO_INCREMENT COMMENT 'Students cannot be enrolled in a school without a legal Guardian, so the relationship is identifying (idStudents embeds idGuardians in its PK)',
-  `Student_number` VARCHAR(10) NULL COMMENT 'Allows for an school/college-based student ID\n\nThis field can also be used to determine the order in which records are viewed (if idStudents does not meet the requirements)',
+  `Student_reg_number` VARCHAR(10) NULL COMMENT 'Allows for an school/college-based student ID\n\nThis field can also be used to determine the order in which records are viewed (if idStudents does not meet the requirements)',
   `Student_fname` VARCHAR(45) NOT NULL,
   `Student_lname` VARCHAR(45) NOT NULL,
   `Student_mid_initial` VARCHAR(10) NULL,
@@ -29,14 +32,14 @@ CREATE TABLE IF NOT EXISTS `LINQ`.`tblStudents` (
   `Year_group` VARCHAR(5) NULL,
   PRIMARY KEY (`idStudents`),
   UNIQUE INDEX `Student_id_UNIQUE` (`idStudents` ASC) VISIBLE,
-  UNIQUE INDEX `Student_number_UNIQUE` (`Student_number` ASC) VISIBLE)
+  UNIQUE INDEX `Student_number_UNIQUE` (`Student_reg_number` ASC) VISIBLE)
 ENGINE = InnoDB;
 
 
 -- -----------------------------------------------------
--- Table `LINQ`.`tblGuardians`
+-- Table `SRM`.`tblGuardians`
 -- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `LINQ`.`tblGuardians` (
+CREATE TABLE IF NOT EXISTS `SRM`.`tblGuardians` (
   `idGuardians` INT NOT NULL AUTO_INCREMENT,
   `Students_id` INT NOT NULL,
   `Guardian_fname` VARCHAR(45) NOT NULL,
@@ -50,16 +53,16 @@ CREATE TABLE IF NOT EXISTS `LINQ`.`tblGuardians` (
   INDEX `Student_id_idx` (`Students_id` ASC) VISIBLE,
   CONSTRAINT `Student_id`
     FOREIGN KEY (`Students_id`)
-    REFERENCES `LINQ`.`tblStudents` (`idStudents`)
+    REFERENCES `SRM`.`tblStudents` (`idStudents`)
     ON DELETE CASCADE
     ON UPDATE NO ACTION)
 ENGINE = InnoDB;
 
 
 -- -----------------------------------------------------
--- Table `LINQ`.`tblSubjects`
+-- Table `SRM`.`tblSubjects`
 -- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `LINQ`.`tblSubjects` (
+CREATE TABLE IF NOT EXISTS `SRM`.`tblSubjects` (
   `idSubjects` INT NOT NULL AUTO_INCREMENT,
   `Subject_title` VARCHAR(45) NOT NULL,
   PRIMARY KEY (`idSubjects`),
@@ -68,24 +71,27 @@ ENGINE = InnoDB;
 
 
 -- -----------------------------------------------------
--- Table `LINQ`.`tblTeachers`
+-- Table `SRM`.`tblTeachers`
 -- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `LINQ`.`tblTeachers` (
-  `idTeachers` INT NOT NULL AUTO_INCREMENT COMMENT 'Re. assignments\nAt the beginning of the year, there may be zero assignments set. However, the assignment, once submitted, can be accessed (shared e.g. year-wide exams) by at least one teacher and possible many more.\nEach assignment set requires only one teacher to set it; in LINQ, it is assumed that multiple teachers do not submit the same assignment.\n\nLINQ checks the identity of teacher by reading multiple fields before transactions are processed, ensuring teachers only update their own records',
+CREATE TABLE IF NOT EXISTS `SRM`.`tblTeachers` (
+  `idTeachers` INT NOT NULL AUTO_INCREMENT COMMENT 'Re. assignments\nAt the beginning of the year, there may be zero assignments set. However, the assignment, once submitted, can be accessed (shared e.g. year-wide exams) by at least one teacher and possible many more.\nEach assignment set requires only one teacher to set it. It is assumed that multiple teachers do not submit the same assignment.\n\nChecks on the identity of teacher by reading multiple fields are conducted before transactions are processed, ensuring teachers only update their own records',
   `Teacher_fname` VARCHAR(45) NOT NULL,
   `Teacher_lname` VARCHAR(45) NOT NULL,
   `Form_group_name` VARCHAR(45) NULL COMMENT 'Not all teachers are pastoral tutors; when they are this field names the group e.g. 10SB\nPlacing it in Teachers table instead of Students_JUNC_teachers table minimises repeated entries',
   `Teacher_work_email` VARCHAR(45) NOT NULL,
   `Teacher_phone` VARCHAR(45) NOT NULL,
+  `Management_role` VARCHAR(25) NULL COMMENT 'This could include Head of Year or Head of Department',
+  `Management_role2` VARCHAR(25) NULL COMMENT 'This could include Head of Year or Head of Department',
+  `LINQ_messages` VARCHAR(100) NULL COMMENT 'Messages or notifications, and responses to/from teachers',
   PRIMARY KEY (`idTeachers`),
   UNIQUE INDEX `idTeachers_UNIQUE` (`idTeachers` ASC) VISIBLE)
 ENGINE = InnoDB;
 
 
 -- -----------------------------------------------------
--- Table `LINQ`.`tblSubjects_Teachers_groups`
+-- Table `SRM`.`tblSubjects_Teachers_groups`
 -- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `LINQ`.`tblSubjects_Teachers_groups` (
+CREATE TABLE IF NOT EXISTS `SRM`.`tblSubjects_Teachers_groups` (
   `idSubjects_Teachers_group` INT NOT NULL AUTO_INCREMENT,
   `Subject_class_name` VARCHAR(45) NULL COMMENT 'Labels the subjects taught by a given teacher with a name for that class e.g. Chem8B etc...',
   `Subjects_id` INT NOT NULL,
@@ -96,70 +102,70 @@ CREATE TABLE IF NOT EXISTS `LINQ`.`tblSubjects_Teachers_groups` (
   INDEX `Teacher_id_idx` (`Teachers_id` ASC) VISIBLE,
   CONSTRAINT `Subject_id`
     FOREIGN KEY (`Subjects_id`)
-    REFERENCES `LINQ`.`tblSubjects` (`idSubjects`)
+    REFERENCES `SRM`.`tblSubjects` (`idSubjects`)
     ON DELETE NO ACTION
     ON UPDATE NO ACTION,
   CONSTRAINT `Teacher_id`
     FOREIGN KEY (`Teachers_id`)
-    REFERENCES `LINQ`.`tblTeachers` (`idTeachers`)
+    REFERENCES `SRM`.`tblTeachers` (`idTeachers`)
     ON DELETE NO ACTION
     ON UPDATE NO ACTION)
 ENGINE = InnoDB;
 
 
 -- -----------------------------------------------------
--- Table `LINQ`.`tblAcademic_classes`
+-- Table `SRM`.`tblAcademic_classes`
 -- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `LINQ`.`tblAcademic_classes` (
+CREATE TABLE IF NOT EXISTS `SRM`.`tblAcademic_classes` (
   `idAcademic_classes` INT NOT NULL AUTO_INCREMENT,
   `Students_id` INT NOT NULL,
-  `Subjects_Teachers_groups_id` INT NOT NULL COMMENT 'This junction could be used to list the students a subject teacher teaches, or vice versa.',
+  `Subjects_Teachers_groups_id` INT NOT NULL,
   INDEX `fk_Subjects_Teachers_group_has_Students_Students1_idx` (`Students_id` ASC) VISIBLE,
   INDEX `fk_Subjects_Teachers_group_has_Students_Subjects_Teachers_g_idx` (`Subjects_Teachers_groups_id` ASC) VISIBLE,
   PRIMARY KEY (`idAcademic_classes`),
   UNIQUE INDEX `idAcademic_class_UNIQUE` (`idAcademic_classes` ASC) VISIBLE,
   CONSTRAINT `Subjects_Teachers_groups_id`
     FOREIGN KEY (`Subjects_Teachers_groups_id`)
-    REFERENCES `LINQ`.`tblSubjects_Teachers_groups` (`idSubjects_Teachers_group`)
+    REFERENCES `SRM`.`tblSubjects_Teachers_groups` (`idSubjects_Teachers_group`)
     ON DELETE NO ACTION
     ON UPDATE NO ACTION,
   CONSTRAINT `AC_Students_id`
     FOREIGN KEY (`Students_id`)
-    REFERENCES `LINQ`.`tblStudents` (`idStudents`)
+    REFERENCES `SRM`.`tblStudents` (`idStudents`)
     ON DELETE CASCADE
     ON UPDATE NO ACTION)
 ENGINE = InnoDB;
 
 
 -- -----------------------------------------------------
--- Table `LINQ`.`tblForm_groups`
+-- Table `SRM`.`tblForm_groups`
 -- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `LINQ`.`tblForm_groups` (
+CREATE TABLE IF NOT EXISTS `SRM`.`tblForm_groups` (
   `idForm_groups` INT NOT NULL AUTO_INCREMENT,
   `Students_id` INT NOT NULL,
-  `Teachers_id` INT NOT NULL COMMENT 'This junction could be used to list the students a form tutor is responsible for, or vice versa.',
+  `Teachers_id` INT NOT NULL,
   INDEX `fk_Teachers_has_Students_Students1_idx` (`Students_id` ASC) VISIBLE,
   INDEX `fk_Teachers_has_Students_Teachers1_idx` (`Teachers_id` ASC) VISIBLE,
   PRIMARY KEY (`idForm_groups`),
   UNIQUE INDEX `idForm_group_UNIQUE` (`idForm_groups` ASC) VISIBLE,
   CONSTRAINT `Teacher_id_form_group`
     FOREIGN KEY (`Teachers_id`)
-    REFERENCES `LINQ`.`tblTeachers` (`idTeachers`)
+    REFERENCES `SRM`.`tblTeachers` (`idTeachers`)
     ON DELETE NO ACTION
     ON UPDATE NO ACTION,
   CONSTRAINT `Student_id_form_group`
     FOREIGN KEY (`Students_id`)
-    REFERENCES `LINQ`.`tblStudents` (`idStudents`)
+    REFERENCES `SRM`.`tblStudents` (`idStudents`)
     ON DELETE CASCADE
     ON UPDATE NO ACTION)
 ENGINE = InnoDB;
 
 
 -- -----------------------------------------------------
--- Table `LINQ`.`tblAssignments_info`
+-- Table `SRM`.`tblAssignments_info`
 -- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `LINQ`.`tblAssignments_info` (
-  `idAssignments_info` INT NOT NULL AUTO_INCREMENT COMMENT 'An assignment need not have a threshold set (Grading_group) and would normally only have one threshold (here, different thresholds are permitted). Conversely, for a threshold to exist, there must be at least one assignment ready, the same threshold could apply to different assignments. Hence Assignments_info is 1-to-many with the child table Grading group, and identifying.\n\nIn relation to Student_Assignments (students\' scores), an assignment can exist but there need not be any student scores available. There are mutiple student scores for a given assignment. Conversely, for a student record to exist, there must be at least one assignment with details prepared.  Hence the relationship is identifying. It is assumed that the assignment score and instructions are unique to the assignment taken.',
+CREATE TABLE IF NOT EXISTS `SRM`.`tblAssignments_info` (
+  `idAssignments_info` INT NOT NULL AUTO_INCREMENT COMMENT 'An assignment need not have a threshold set (Grading_group) and would normally only have one threshold (here, different thresholds are permitted). Conversely, for a threshold to exist, there must be at least one assignment ready, the same threshold could apply to different assignments. Hence Assignments_info is one-to-many with the child table Grading group, and identifying.\n\nIn relation to Student_Assignments (students\' scores), an assignment can exist but there need not be any student scores available. There are mutiple student scores for a given assignment. Conversely, for a student record to exist, there must be at least one assignment with details prepared.  Hence the relationship is identifying. It is assumed that the assignment score and instructions are unique to the assignment taken.',
   `Assignment_title` VARCHAR(45) NOT NULL COMMENT 'This field can be populated such that it controls the order in which records are viewed (if PKs do not serve adequate purpose)',
   `Assignment_detail` VARCHAR(100) NULL,
   `Max_raw_score` INT NOT NULL DEFAULT 100,
@@ -171,9 +177,9 @@ ENGINE = InnoDB;
 
 
 -- -----------------------------------------------------
--- Table `LINQ`.`tblAssignments_teacher_info`
+-- Table `SRM`.`tblAssignments_teacher_info`
 -- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `LINQ`.`tblAssignments_teacher_info` (
+CREATE TABLE IF NOT EXISTS `SRM`.`tblAssignments_teacher_info` (
   `idAssignments_teacher_info` INT NOT NULL AUTO_INCREMENT,
   `Assignment_entry_date` DATE NOT NULL,
   `Add_to_average` TINYINT NOT NULL DEFAULT 1 COMMENT 'Set to zero if this assignment should not contribute to the cumulative average but remain on the DB. All non-zero values are considered TRUE',
@@ -185,48 +191,49 @@ CREATE TABLE IF NOT EXISTS `LINQ`.`tblAssignments_teacher_info` (
   INDEX `Teacher_id_sub_idx` (`Teachers_id` ASC) VISIBLE,
   CONSTRAINT `Assignment_id_sub`
     FOREIGN KEY (`Assignments_info_id`)
-    REFERENCES `LINQ`.`tblAssignments_info` (`idAssignments_info`)
+    REFERENCES `SRM`.`tblAssignments_info` (`idAssignments_info`)
     ON DELETE NO ACTION
     ON UPDATE NO ACTION,
   CONSTRAINT `Teacher_id_sub`
     FOREIGN KEY (`Teachers_id`)
-    REFERENCES `LINQ`.`tblTeachers` (`idTeachers`)
+    REFERENCES `SRM`.`tblTeachers` (`idTeachers`)
     ON DELETE SET NULL
     ON UPDATE NO ACTION)
 ENGINE = InnoDB;
 
 
 -- -----------------------------------------------------
--- Table `LINQ`.`tblStudent_assignments`
+-- Table `SRM`.`tblStudent_assignments`
 -- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `LINQ`.`tblStudent_assignments` (
+CREATE TABLE IF NOT EXISTS `SRM`.`tblStudent_assignments` (
   `idStudent_assignments` INT NOT NULL AUTO_INCREMENT,
   `Assignments_info_id` INT NOT NULL,
   `Comments_for_guardian` VARCHAR(300) NULL,
   `Comments_for_staff` VARCHAR(300) NULL,
   `Raw_score` INT NULL COMMENT 'Allow NULL for students who were absent (ignored when average is tallied)',
   `Students_id` INT NULL COMMENT 'This FK can be NULL so that when a student is removed from the database, the assignment scores and other details are retained for review/evaluation purposes',
+  `Assignment_date` DATE NULL,
   PRIMARY KEY (`idStudent_assignments`, `Assignments_info_id`),
   UNIQUE INDEX `idStudent_assignments_UNIQUE` (`idStudent_assignments` ASC) VISIBLE,
   INDEX `Assignment_id_idx` (`Assignments_info_id` ASC) VISIBLE,
   INDEX `Student_id_idx` (`Students_id` ASC) VISIBLE,
   CONSTRAINT `Students_Assignment_id`
     FOREIGN KEY (`Assignments_info_id`)
-    REFERENCES `LINQ`.`tblAssignments_info` (`idAssignments_info`)
+    REFERENCES `SRM`.`tblAssignments_info` (`idAssignments_info`)
     ON DELETE NO ACTION
     ON UPDATE NO ACTION,
   CONSTRAINT `Student_id_assignments`
     FOREIGN KEY (`Students_id`)
-    REFERENCES `LINQ`.`tblStudents` (`idStudents`)
+    REFERENCES `SRM`.`tblStudents` (`idStudents`)
     ON DELETE SET NULL
     ON UPDATE NO ACTION)
 ENGINE = InnoDB;
 
 
 -- -----------------------------------------------------
--- Table `LINQ`.`tblGrade_thresholds`
+-- Table `SRM`.`tblGrade_thresholds`
 -- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `LINQ`.`tblGrade_thresholds` (
+CREATE TABLE IF NOT EXISTS `SRM`.`tblGrade_thresholds` (
   `idGrade_thresholds` INT NOT NULL AUTO_INCREMENT,
   `Threshold_note` VARCHAR(100) NULL,
   `Highest_raw` INT NOT NULL COMMENT 'This represents the boundary of the highest grade possible. Scores at or above this value are assigned the Highest_char (see Letter_grade_chars)',
@@ -255,9 +262,9 @@ ENGINE = InnoDB;
 
 
 -- -----------------------------------------------------
--- Table `LINQ`.`tblLetter_grade_chars`
+-- Table `SRM`.`tblLetter_grade_chars`
 -- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `LINQ`.`tblLetter_grade_chars` (
+CREATE TABLE IF NOT EXISTS `SRM`.`tblLetter_grade_chars` (
   `idLetter_grade_chars` INT NOT NULL AUTO_INCREMENT COMMENT 'Letter grades (A, B+, D--, A*, MERIT, DISTINCTION, PASS etc.)\n\nIf grading chars is implemented then there must be at least one grading group present. The sequence of cahrs used might apply to multiple gradings with different numerical thresholds. Grading_chars need not exist for grading groups to exist, hence non-identifying.',
   `Letter_grade_note` VARCHAR(100) NULL,
   `Highest_char` VARCHAR(11) NOT NULL,
@@ -286,9 +293,9 @@ ENGINE = InnoDB;
 
 
 -- -----------------------------------------------------
--- Table `LINQ`.`tblGrading_groups`
+-- Table `SRM`.`tblGrading_groups`
 -- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `LINQ`.`tblGrading_groups` (
+CREATE TABLE IF NOT EXISTS `SRM`.`tblGrading_groups` (
   `idGrading_groups` INT NOT NULL AUTO_INCREMENT,
   `Assignments_info_id` INT NOT NULL,
   `Grade_thresholds_id` INT NULL COMMENT 'Grade thresholds are numerical boundaries. These can be paired with different letter grade symbols (Letter_grade_chars)',
@@ -300,28 +307,28 @@ CREATE TABLE IF NOT EXISTS `LINQ`.`tblGrading_groups` (
   INDEX `Letter_grade_chars_id_idx` (`Letter_grade_chars_id` ASC) VISIBLE,
   CONSTRAINT `Assignment_id_threshold`
     FOREIGN KEY (`Assignments_info_id`)
-    REFERENCES `LINQ`.`tblAssignments_info` (`idAssignments_info`)
+    REFERENCES `SRM`.`tblAssignments_info` (`idAssignments_info`)
     ON DELETE NO ACTION
     ON UPDATE NO ACTION,
   CONSTRAINT `Grade_thresholds_id`
     FOREIGN KEY (`Grade_thresholds_id`)
-    REFERENCES `LINQ`.`tblGrade_thresholds` (`idGrade_thresholds`)
+    REFERENCES `SRM`.`tblGrade_thresholds` (`idGrade_thresholds`)
     ON DELETE NO ACTION
     ON UPDATE NO ACTION,
   CONSTRAINT `Letter_grade_chars_id`
     FOREIGN KEY (`Letter_grade_chars_id`)
-    REFERENCES `LINQ`.`tblLetter_grade_chars` (`idLetter_grade_chars`)
+    REFERENCES `SRM`.`tblLetter_grade_chars` (`idLetter_grade_chars`)
     ON DELETE NO ACTION
     ON UPDATE NO ACTION)
 ENGINE = InnoDB;
 
 
 -- -----------------------------------------------------
--- Table `LINQ`.`tblStudents_Subjects`
+-- Table `SRM`.`tblStudents_Subjects`
 -- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `LINQ`.`tblStudents_Subjects` (
+CREATE TABLE IF NOT EXISTS `SRM`.`tblStudents_Subjects` (
   `idStudent_Subjects` INT NOT NULL AUTO_INCREMENT,
-  `Students_id` INT NOT NULL COMMENT 'Part of a composite PK\nThe junction is needed to faciliate a direct link between many-to-many relationships.\nThis junction (bridge) could be used to list the subjects that are taken by a particular student, or vice versa.',
+  `Students_id` INT NOT NULL,
   `Subjects_id` INT NOT NULL COMMENT 'Part of a composite PK',
   INDEX `fk_Students_has_Subjects_Subjects1_idx` (`Subjects_id` ASC) VISIBLE,
   INDEX `fk_Students_has_Subjects_Students1_idx` (`Students_id` ASC) VISIBLE,
@@ -329,21 +336,21 @@ CREATE TABLE IF NOT EXISTS `LINQ`.`tblStudents_Subjects` (
   UNIQUE INDEX `idStudent_JUNC_Subjects_UNIQUE` (`idStudent_Subjects` ASC) VISIBLE,
   CONSTRAINT `SS_Students_id`
     FOREIGN KEY (`Students_id`)
-    REFERENCES `LINQ`.`tblStudents` (`idStudents`)
+    REFERENCES `SRM`.`tblStudents` (`idStudents`)
     ON DELETE CASCADE
     ON UPDATE NO ACTION,
   CONSTRAINT `Subjects_id`
     FOREIGN KEY (`Subjects_id`)
-    REFERENCES `LINQ`.`tblSubjects` (`idSubjects`)
+    REFERENCES `SRM`.`tblSubjects` (`idSubjects`)
     ON DELETE NO ACTION
     ON UPDATE NO ACTION)
 ENGINE = InnoDB;
 
 
 -- -----------------------------------------------------
--- Table `LINQ`.`tblGuardians_addresses`
+-- Table `SRM`.`tblGuardians_addresses`
 -- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `LINQ`.`tblGuardians_addresses` (
+CREATE TABLE IF NOT EXISTS `SRM`.`tblGuardians_addresses` (
   `idGuardians_addresses` INT NOT NULL AUTO_INCREMENT,
   `First_line` VARCHAR(45) NOT NULL,
   `Second_line` VARCHAR(45) NULL,
@@ -356,16 +363,16 @@ CREATE TABLE IF NOT EXISTS `LINQ`.`tblGuardians_addresses` (
   INDEX `Guardian1_address_idx` (`Guardians_id` ASC) VISIBLE,
   CONSTRAINT `Guardian1_address`
     FOREIGN KEY (`Guardians_id`)
-    REFERENCES `LINQ`.`tblGuardians` (`idGuardians`)
+    REFERENCES `SRM`.`tblGuardians` (`idGuardians`)
     ON DELETE CASCADE
     ON UPDATE NO ACTION)
 ENGINE = InnoDB;
 
 
 -- -----------------------------------------------------
--- Table `LINQ`.`tblStudent_reports`
+-- Table `SRM`.`tblStudent_reports`
 -- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `LINQ`.`tblStudent_reports` (
+CREATE TABLE IF NOT EXISTS `SRM`.`tblStudent_reports` (
   `idStudent_reports` INT NOT NULL AUTO_INCREMENT,
   `Students_id` INT NOT NULL,
   `Teachers_id` INT NOT NULL,
@@ -378,21 +385,21 @@ CREATE TABLE IF NOT EXISTS `LINQ`.`tblStudent_reports` (
   INDEX `Teacher_id_report_idx` (`Teachers_id` ASC) VISIBLE,
   CONSTRAINT `SR_Student_id_report`
     FOREIGN KEY (`Students_id`)
-    REFERENCES `LINQ`.`tblStudents` (`idStudents`)
+    REFERENCES `SRM`.`tblStudents` (`idStudents`)
     ON DELETE CASCADE
     ON UPDATE NO ACTION,
   CONSTRAINT `Teacher_id_report`
     FOREIGN KEY (`Teachers_id`)
-    REFERENCES `LINQ`.`tblTeachers` (`idTeachers`)
+    REFERENCES `SRM`.`tblTeachers` (`idTeachers`)
     ON DELETE NO ACTION
     ON UPDATE NO ACTION)
 ENGINE = InnoDB;
 
 
 -- -----------------------------------------------------
--- Table `LINQ`.`tblLINQ_users`
+-- Table `SRM`.`tblLINQ_users`
 -- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `LINQ`.`tblLINQ_users` (
+CREATE TABLE IF NOT EXISTS `SRM`.`tblLINQ_users` (
   `idLINQ_users` INT NOT NULL AUTO_INCREMENT,
   `user_fname` VARCHAR(45) NULL,
   `user_lname` VARCHAR(45) NULL,
@@ -406,78 +413,78 @@ CREATE TABLE IF NOT EXISTS `LINQ`.`tblLINQ_users` (
   UNIQUE INDEX `LINQ_useremail_UNIQUE` (`LINQ_useremail` ASC) VISIBLE)
 ENGINE = InnoDB;
 
-USE `LINQ` ;
+USE `SRM` ;
 
 -- -----------------------------------------------------
--- Placeholder table for view `LINQ`.`vw_Form_group_list`
+-- Placeholder table for view `SRM`.`vw_Form_group_list`
 -- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `LINQ`.`vw_Form_group_list` (`idStudents` INT, `Student_number` INT, `Student_fname` INT, `Student_lname` INT, `Student_mid_initial` INT, `Student_email` INT, `Student_phone` INT, `Year_group` INT, `idForm_groups` INT, `Students_id` INT, `Teachers_id` INT, `idTeachers` INT, `Teacher_fname` INT, `Teacher_lname` INT, `Form_group_name` INT, `Teacher_work_email` INT, `Teacher_phone` INT);
+CREATE TABLE IF NOT EXISTS `SRM`.`vw_Form_group_list` (`idStudents` INT, `Student_reg_number` INT, `Student_fname` INT, `Student_lname` INT, `Student_mid_initial` INT, `Student_email` INT, `Student_phone` INT, `Year_group` INT, `idForm_groups` INT, `Students_id` INT, `Teachers_id` INT, `idTeachers` INT, `Teacher_fname` INT, `Teacher_lname` INT, `Form_group_name` INT, `Teacher_work_email` INT, `Teacher_phone` INT, `Management_role` INT, `Management_role2` INT, `LINQ_messages` INT);
 
 -- -----------------------------------------------------
--- Placeholder table for view `LINQ`.`vw_Academic_classes_with_students`
+-- Placeholder table for view `SRM`.`vw_Academic_classes_with_students`
 -- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `LINQ`.`vw_Academic_classes_with_students` (`idStudents` INT, `Student_number` INT, `Student_fname` INT, `Student_lname` INT, `Student_mid_initial` INT, `Student_email` INT, `Student_phone` INT, `Year_group` INT, `idSubjects_Teachers_group` INT, `Subject_class_name` INT, `Subjects_id` INT, `Teachers_id` INT, `idTeachers` INT, `Teacher_fname` INT, `Teacher_lname` INT, `Form_group_name` INT, `Teacher_work_email` INT, `Teacher_phone` INT, `idSubjects` INT, `Subject_title` INT);
+CREATE TABLE IF NOT EXISTS `SRM`.`vw_Academic_classes_with_students` (`idStudents` INT, `Student_reg_number` INT, `Student_fname` INT, `Student_lname` INT, `Student_mid_initial` INT, `Student_email` INT, `Student_phone` INT, `Year_group` INT, `idSubjects_Teachers_group` INT, `Subject_class_name` INT, `Subjects_id` INT, `Teachers_id` INT, `idTeachers` INT, `Teacher_fname` INT, `Teacher_lname` INT, `Form_group_name` INT, `Teacher_work_email` INT, `Teacher_phone` INT, `Management_role` INT, `Management_role2` INT, `LINQ_messages` INT, `idSubjects` INT, `Subject_title` INT);
 
 -- -----------------------------------------------------
--- Placeholder table for view `LINQ`.`vw_Subjects_available`
+-- Placeholder table for view `SRM`.`vw_Subjects_available`
 -- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `LINQ`.`vw_Subjects_available` (`idSubjects` INT, `Subject_title` INT);
+CREATE TABLE IF NOT EXISTS `SRM`.`vw_Subjects_available` (`idSubjects` INT, `Subject_title` INT);
 
 -- -----------------------------------------------------
--- Placeholder table for view `LINQ`.`vw_Subjects_available_with_students`
+-- Placeholder table for view `SRM`.`vw_Subjects_available_with_students`
 -- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `LINQ`.`vw_Subjects_available_with_students` (`idSubjects` INT, `Subject_title` INT, `idStudents` INT, `Student_number` INT, `Student_fname` INT, `Student_lname` INT, `Student_mid_initial` INT, `Student_email` INT, `Student_phone` INT, `Year_group` INT);
+CREATE TABLE IF NOT EXISTS `SRM`.`vw_Subjects_available_with_students` (`idSubjects` INT, `Subject_title` INT, `idStudents` INT, `Student_reg_number` INT, `Student_fname` INT, `Student_lname` INT, `Student_mid_initial` INT, `Student_email` INT, `Student_phone` INT, `Year_group` INT);
 
 -- -----------------------------------------------------
--- Placeholder table for view `LINQ`.`vw_Academic_classes`
+-- Placeholder table for view `SRM`.`vw_Academic_classes`
 -- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `LINQ`.`vw_Academic_classes` (`idSubjects_Teachers_group` INT, `Subject_class_name` INT, `Subjects_id` INT, `Teachers_id` INT, `idTeachers` INT, `Teacher_fname` INT, `Teacher_lname` INT, `Form_group_name` INT, `Teacher_work_email` INT, `Teacher_phone` INT, `idSubjects` INT, `Subject_title` INT);
+CREATE TABLE IF NOT EXISTS `SRM`.`vw_Academic_classes` (`idSubjects_Teachers_group` INT, `Subject_class_name` INT, `Subjects_id` INT, `Teachers_id` INT, `idTeachers` INT, `Teacher_fname` INT, `Teacher_lname` INT, `Form_group_name` INT, `Teacher_work_email` INT, `Teacher_phone` INT, `Management_role` INT, `Management_role2` INT, `LINQ_messages` INT, `idSubjects` INT, `Subject_title` INT);
 
 -- -----------------------------------------------------
--- Placeholder table for view `LINQ`.`vw_Teachers_list`
+-- Placeholder table for view `SRM`.`vw_Teachers_list`
 -- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `LINQ`.`vw_Teachers_list` (`idTeachers` INT, `Teacher_fname` INT, `Teacher_lname` INT, `Form_group_name` INT, `Teacher_work_email` INT, `Teacher_phone` INT);
+CREATE TABLE IF NOT EXISTS `SRM`.`vw_Teachers_list` (`idTeachers` INT, `Teacher_fname` INT, `Teacher_lname` INT, `Form_group_name` INT, `Teacher_work_email` INT, `Teacher_phone` INT, `Management_role` INT, `Management_role2` INT, `LINQ_messages` INT);
 
 -- -----------------------------------------------------
--- Placeholder table for view `LINQ`.`vw_Students_personal_data`
+-- Placeholder table for view `SRM`.`vw_Students_personal_data`
 -- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `LINQ`.`vw_Students_personal_data` (`idStudents` INT, `Student_number` INT, `Student_fname` INT, `Student_lname` INT, `Student_mid_initial` INT, `Student_email` INT, `Student_phone` INT, `Year_group` INT, `idGuardians` INT, `Students_id` INT, `Guardian_fname` INT, `Guardian_lname` INT, `Guardian_phone` INT, `Guardian_email` INT, `Guardian_2nd_email` INT, `Gaurdian_2nd_phone` INT, `idGuardians_addresses` INT, `First_line` INT, `Second_line` INT, `County_State` INT, `Postcode_ZIPcode` INT, `Country` INT, `Guardians_id` INT);
+CREATE TABLE IF NOT EXISTS `SRM`.`vw_Students_personal_data` (`idStudents` INT, `Student_reg_number` INT, `Student_fname` INT, `Student_lname` INT, `Student_mid_initial` INT, `Student_email` INT, `Student_phone` INT, `Year_group` INT, `idGuardians` INT, `Students_id` INT, `Guardian_fname` INT, `Guardian_lname` INT, `Guardian_phone` INT, `Guardian_email` INT, `Guardian_2nd_email` INT, `Gaurdian_2nd_phone` INT, `idGuardians_addresses` INT, `First_line` INT, `Second_line` INT, `County_State` INT, `Postcode_ZIPcode` INT, `Country` INT, `Guardians_id` INT);
 
 -- -----------------------------------------------------
--- Placeholder table for view `LINQ`.`vw_Assignments_on_record`
+-- Placeholder table for view `SRM`.`vw_Assignments_on_record`
 -- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `LINQ`.`vw_Assignments_on_record` (`idAssignments_info` INT, `assignment_title` INT, `assignment_detail` INT, `max_raw_score` INT, `type_of_assessment` INT, `teachers_instruction` INT, `idAssignments_teacher_info` INT, `assignment_entry_date` INT, `add_to_average` INT, `teachers_id` INT);
+CREATE TABLE IF NOT EXISTS `SRM`.`vw_Assignments_on_record` (`idAssignments_info` INT, `assignment_title` INT, `assignment_detail` INT, `max_raw_score` INT, `type_of_assessment` INT, `teachers_instruction` INT, `idAssignments_teacher_info` INT, `assignment_entry_date` INT, `add_to_average` INT, `teachers_id` INT);
 
 -- -----------------------------------------------------
--- Placeholder table for view `LINQ`.`vw_Assignments_with_thresholds`
+-- Placeholder table for view `SRM`.`vw_Assignments_with_thresholds`
 -- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `LINQ`.`vw_Assignments_with_thresholds` (`idAssignments_info` INT, `Assignment_title` INT, `assignment_detail` INT, `max_raw_score` INT, `type_of_assessment` INT, `teachers_instruction` INT, `assignment_entry_date` INT, `add_to_average` INT, `teachers_id` INT, `threshold_note` INT, `letter_grade_note` INT, `Highest_raw` INT, `highest_char` INT, `high1_raw` INT, `high1_char` INT, `high2_raw` INT, `high2_char` INT, `high3_raw` INT, `high3_char` INT, `high4_raw` INT, `high4_char` INT, `high5_raw` INT, `high5_char` INT, `high6_raw` INT, `high6_char` INT, `high7_raw` INT, `high7_char` INT, `high8_raw` INT, `high8_char` INT, `high9_raw` INT, `high9_char` INT, `high10_raw` INT, `high10_char` INT, `high11_raw` INT, `high11_char` INT, `high12_raw` INT, `high12_char` INT, `high13_raw` INT, `high13_char` INT, `high14_raw` INT, `high14_char` INT, `high15_raw` INT, `high15_char` INT, `high16_raw` INT, `high16_char` INT, `high17_raw` INT, `high17_char` INT, `lowest_raw` INT, `lowest_char` INT);
+CREATE TABLE IF NOT EXISTS `SRM`.`vw_Assignments_with_thresholds` (`idAssignments_info` INT, `Assignment_title` INT, `assignment_detail` INT, `max_raw_score` INT, `type_of_assessment` INT, `teachers_instruction` INT, `assignment_entry_date` INT, `add_to_average` INT, `teachers_id` INT, `threshold_note` INT, `letter_grade_note` INT, `Highest_raw` INT, `highest_char` INT, `high1_raw` INT, `high1_char` INT, `high2_raw` INT, `high2_char` INT, `high3_raw` INT, `high3_char` INT, `high4_raw` INT, `high4_char` INT, `high5_raw` INT, `high5_char` INT, `high6_raw` INT, `high6_char` INT, `high7_raw` INT, `high7_char` INT, `high8_raw` INT, `high8_char` INT, `high9_raw` INT, `high9_char` INT, `high10_raw` INT, `high10_char` INT, `high11_raw` INT, `high11_char` INT, `high12_raw` INT, `high12_char` INT, `high13_raw` INT, `high13_char` INT, `high14_raw` INT, `high14_char` INT, `high15_raw` INT, `high15_char` INT, `high16_raw` INT, `high16_char` INT, `high17_raw` INT, `high17_char` INT, `lowest_raw` INT, `lowest_char` INT);
 
 -- -----------------------------------------------------
--- Placeholder table for view `LINQ`.`vw_Assignments_with_scores`
+-- Placeholder table for view `SRM`.`vw_Assignments_with_scores`
 -- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `LINQ`.`vw_Assignments_with_scores` (`idStudents` INT, `student_number` INT, `student_fname` INT, `student_mid_initial` INT, `student_lname` INT, `student_email` INT, `student_phone` INT, `year_group` INT, `comments_for_guardian` INT, `comments_for_staff` INT, `raw_score` INT, `idAssignments_info` INT, `assignment_title` INT, `assignment_detail` INT, `max_raw_score` INT, `type_of_assessment` INT, `teachers_instruction` INT, `assignment_entry_date` INT, `add_to_average` INT, `idTeachers` INT, `teacher_fname` INT, `teacher_lname` INT, `form_group_name` INT, `teacher_work_email` INT, `teacher_phone` INT);
+CREATE TABLE IF NOT EXISTS `SRM`.`vw_Assignments_with_scores` (`idStudents` INT, `Student_reg_number` INT, `student_fname` INT, `student_mid_initial` INT, `student_lname` INT, `student_email` INT, `student_phone` INT, `year_group` INT, `comments_for_guardian` INT, `comments_for_staff` INT, `raw_score` INT, `idAssignments_info` INT, `assignment_title` INT, `assignment_detail` INT, `max_raw_score` INT, `type_of_assessment` INT, `teachers_instruction` INT, `assignment_entry_date` INT, `add_to_average` INT, `idTeachers` INT, `teacher_fname` INT, `teacher_lname` INT, `form_group_name` INT, `teacher_work_email` INT, `teacher_phone` INT);
 
 -- -----------------------------------------------------
--- Placeholder table for view `LINQ`.`vw_Assignments_with_scores_and_grades`
+-- Placeholder table for view `SRM`.`vw_Assignments_with_scores_and_grades`
 -- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `LINQ`.`vw_Assignments_with_scores_and_grades` (`idStudents` INT, `student_number` INT, `student_fname` INT, `student_mid_initial` INT, `student_lname` INT, `student_email` INT, `student_phone` INT, `year_group` INT, `comments_for_guardian` INT, `comments_for_staff` INT, `raw_score` INT, `idAssignments_info` INT, `assignment_title` INT, `assignment_detail` INT, `max_raw_score` INT, `type_of_assessment` INT, `teachers_instruction` INT, `assignment_entry_date` INT, `add_to_average` INT, `idTeachers` INT, `teacher_fname` INT, `teacher_lname` INT, `form_group_name` INT, `teacher_work_email` INT, `teacher_phone` INT, `'Grade'` INT);
+CREATE TABLE IF NOT EXISTS `SRM`.`vw_Assignments_with_scores_and_grades` (`idStudents` INT, `Student_reg_number` INT, `student_fname` INT, `student_mid_initial` INT, `student_lname` INT, `student_email` INT, `student_phone` INT, `year_group` INT, `comments_for_guardian` INT, `comments_for_staff` INT, `raw_score` INT, `idAssignments_info` INT, `assignment_title` INT, `assignment_detail` INT, `max_raw_score` INT, `type_of_assessment` INT, `teachers_instruction` INT, `assignment_entry_date` INT, `add_to_average` INT, `idTeachers` INT, `teacher_fname` INT, `teacher_lname` INT, `form_group_name` INT, `teacher_work_email` INT, `teacher_phone` INT, `'Grade'` INT);
 
 -- -----------------------------------------------------
--- Placeholder table for view `LINQ`.`vw_Students_assignments_grades`
+-- Placeholder table for view `SRM`.`vw_Students_assignments_grades`
 -- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `LINQ`.`vw_Students_assignments_grades` (`idStudents` INT, `student_number` INT, `student_fname` INT, `student_mid_initial` INT, `student_lname` INT, `student_email` INT, `student_phone` INT, `year_group` INT, `comments_for_guardian` INT, `comments_for_staff` INT, `raw_score` INT, `idAssignments_info` INT, `assignment_title` INT, `assignment_detail` INT, `max_raw_score` INT, `type_of_assessment` INT, `teachers_instruction` INT, `'Grade'` INT);
+CREATE TABLE IF NOT EXISTS `SRM`.`vw_Students_assignments_grades` (`idStudents` INT, `Student_reg_number` INT, `student_fname` INT, `student_mid_initial` INT, `student_lname` INT, `student_email` INT, `student_phone` INT, `year_group` INT, `comments_for_guardian` INT, `comments_for_staff` INT, `raw_score` INT, `idAssignments_info` INT, `assignment_title` INT, `assignment_detail` INT, `max_raw_score` INT, `type_of_assessment` INT, `teachers_instruction` INT, `'Grade'` INT);
 
 -- -----------------------------------------------------
--- Placeholder table for view `LINQ`.`vw_Students_assignments_grades_min`
+-- Placeholder table for view `SRM`.`vw_Students_assignments_grades_min`
 -- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `LINQ`.`vw_Students_assignments_grades_min` (`idStudents` INT, `student_number` INT, `student_fname` INT, `student_mid_initial` INT, `student_lname` INT, `student_email` INT, `assignment_title` INT, `max_raw_score` INT, `raw_score` INT, `'Grade'` INT, `type_of_assessment` INT, `comments_for_guardian` INT, `comments_for_staff` INT);
+CREATE TABLE IF NOT EXISTS `SRM`.`vw_Students_assignments_grades_min` (`idStudents` INT, `Student_reg_number` INT, `student_fname` INT, `student_mid_initial` INT, `student_lname` INT, `student_email` INT, `assignment_title` INT, `max_raw_score` INT, `raw_score` INT, `'Grade'` INT, `type_of_assessment` INT, `comments_for_guardian` INT, `comments_for_staff` INT);
 
 -- -----------------------------------------------------
--- View `LINQ`.`vw_Form_group_list`
+-- View `SRM`.`vw_Form_group_list`
 -- -----------------------------------------------------
-DROP TABLE IF EXISTS `LINQ`.`vw_Form_group_list`;
-USE `LINQ`;
+DROP TABLE IF EXISTS `SRM`.`vw_Form_group_list`;
+USE `SRM`;
 CREATE  OR REPLACE VIEW `vw_Form_group_list` AS
     SELECT 
         *
@@ -491,10 +498,10 @@ CREATE  OR REPLACE VIEW `vw_Form_group_list` AS
         tblForm_groups.students_id = idStudents;
 
 -- -----------------------------------------------------
--- View `LINQ`.`vw_Academic_classes_with_students`
+-- View `SRM`.`vw_Academic_classes_with_students`
 -- -----------------------------------------------------
-DROP TABLE IF EXISTS `LINQ`.`vw_Academic_classes_with_students`;
-USE `LINQ`;
+DROP TABLE IF EXISTS `SRM`.`vw_Academic_classes_with_students`;
+USE `SRM`;
 CREATE  OR REPLACE VIEW `vw_Academic_classes_with_students` AS
     SELECT 
         *
@@ -510,26 +517,33 @@ CREATE  OR REPLACE VIEW `vw_Academic_classes_with_students` AS
         tblSubjects ON tblSubjects_teachers_groups.subjects_id = idSubjects;
 
 -- -----------------------------------------------------
--- View `LINQ`.`vw_Subjects_available`
+-- View `SRM`.`vw_Subjects_available`
 -- -----------------------------------------------------
-DROP TABLE IF EXISTS `LINQ`.`vw_Subjects_available`;
-USE `LINQ`;
+DROP TABLE IF EXISTS `SRM`.`vw_Subjects_available`;
+USE `SRM`;
 CREATE  OR REPLACE VIEW `vw_Subjects_available` AS
 select * from tblSubjects left join tblstudents_subjects on idSubjects = tblStudents_Subjects.subjects_id;
 
 -- -----------------------------------------------------
--- View `LINQ`.`vw_Subjects_available_with_students`
+-- View `SRM`.`vw_Subjects_available_with_students`
 -- -----------------------------------------------------
-DROP TABLE IF EXISTS `LINQ`.`vw_Subjects_available_with_students`;
-USE `LINQ`;
+DROP TABLE IF EXISTS `SRM`.`vw_Subjects_available_with_students`;
+USE `SRM`;
 CREATE  OR REPLACE VIEW `vw_Subjects_available_with_students` AS
-select * from tblSubjects left join tblstudents_subjects on idSubjects = tblStudents_Subjects.subjects_id left join tblStudents on tblStudents_Subjects.students_id = idStudents;
+    SELECT 
+        *
+    FROM
+        tblSubjects
+            LEFT JOIN
+        tblstudents_subjects ON idSubjects = tblStudents_Subjects.subjects_id
+            LEFT JOIN
+        tblStudents ON tblStudents_Subjects.students_id = idStudents;
 
 -- -----------------------------------------------------
--- View `LINQ`.`vw_Academic_classes`
+-- View `SRM`.`vw_Academic_classes`
 -- -----------------------------------------------------
-DROP TABLE IF EXISTS `LINQ`.`vw_Academic_classes`;
-USE `LINQ`;
+DROP TABLE IF EXISTS `SRM`.`vw_Academic_classes`;
+USE `SRM`;
 CREATE  OR REPLACE VIEW `vw_Academic_classes` AS
     SELECT 
         *
@@ -541,10 +555,10 @@ CREATE  OR REPLACE VIEW `vw_Academic_classes` AS
         tblSubjects ON tblSubjects_teachers_groups.subjects_id = idSubjects;
 
 -- -----------------------------------------------------
--- View `LINQ`.`vw_Teachers_list`
+-- View `SRM`.`vw_Teachers_list`
 -- -----------------------------------------------------
-DROP TABLE IF EXISTS `LINQ`.`vw_Teachers_list`;
-USE `LINQ`;
+DROP TABLE IF EXISTS `SRM`.`vw_Teachers_list`;
+USE `SRM`;
 CREATE  OR REPLACE VIEW `vw_Teachers_list` AS
     SELECT 
         *
@@ -552,10 +566,10 @@ CREATE  OR REPLACE VIEW `vw_Teachers_list` AS
         tblTeachers;
 
 -- -----------------------------------------------------
--- View `LINQ`.`vw_Students_personal_data`
+-- View `SRM`.`vw_Students_personal_data`
 -- -----------------------------------------------------
-DROP TABLE IF EXISTS `LINQ`.`vw_Students_personal_data`;
-USE `LINQ`;
+DROP TABLE IF EXISTS `SRM`.`vw_Students_personal_data`;
+USE `SRM`;
 CREATE  OR REPLACE VIEW `vw_Students_personal_data` AS
     SELECT 
         *
@@ -567,10 +581,10 @@ CREATE  OR REPLACE VIEW `vw_Students_personal_data` AS
         tblGuardians_addresses ON Guardians_id = idGuardians;
 
 -- -----------------------------------------------------
--- View `LINQ`.`vw_Assignments_on_record`
+-- View `SRM`.`vw_Assignments_on_record`
 -- -----------------------------------------------------
-DROP TABLE IF EXISTS `LINQ`.`vw_Assignments_on_record`;
-USE `LINQ`;
+DROP TABLE IF EXISTS `SRM`.`vw_Assignments_on_record`;
+USE `SRM`;
 CREATE  OR REPLACE VIEW `vw_Assignments_on_record` AS
     SELECT 
         idAssignments_info,
@@ -589,10 +603,10 @@ CREATE  OR REPLACE VIEW `vw_Assignments_on_record` AS
         tblAssignments_teacher_info ON tblAssignments_teacher_info.assignments_info_id = idAssignments_info;
 
 -- -----------------------------------------------------
--- View `LINQ`.`vw_Assignments_with_thresholds`
+-- View `SRM`.`vw_Assignments_with_thresholds`
 -- -----------------------------------------------------
-DROP TABLE IF EXISTS `LINQ`.`vw_Assignments_with_thresholds`;
-USE `LINQ`;
+DROP TABLE IF EXISTS `SRM`.`vw_Assignments_with_thresholds`;
+USE `SRM`;
 CREATE  OR REPLACE VIEW `vw_Assignments_with_thresholds` AS
     SELECT 
         idAssignments_info,
@@ -656,14 +670,14 @@ CREATE  OR REPLACE VIEW `vw_Assignments_with_thresholds` AS
         tblLetter_grade_chars ON Letter_grade_chars_id = idLetter_grade_chars;
 
 -- -----------------------------------------------------
--- View `LINQ`.`vw_Assignments_with_scores`
+-- View `SRM`.`vw_Assignments_with_scores`
 -- -----------------------------------------------------
-DROP TABLE IF EXISTS `LINQ`.`vw_Assignments_with_scores`;
-USE `LINQ`;
+DROP TABLE IF EXISTS `SRM`.`vw_Assignments_with_scores`;
+USE `SRM`;
 CREATE  OR REPLACE VIEW `vw_Assignments_with_scores` AS
 SELECT 
     idStudents,
-    student_number,
+    Student_reg_number,
     student_fname,
     student_mid_initial,
     student_lname,
@@ -699,14 +713,14 @@ FROM
     tblTeachers ON idTeachers = tblAssignments_teacher_info.teachers_id;
 
 -- -----------------------------------------------------
--- View `LINQ`.`vw_Assignments_with_scores_and_grades`
+-- View `SRM`.`vw_Assignments_with_scores_and_grades`
 -- -----------------------------------------------------
-DROP TABLE IF EXISTS `LINQ`.`vw_Assignments_with_scores_and_grades`;
-USE `LINQ`;
+DROP TABLE IF EXISTS `SRM`.`vw_Assignments_with_scores_and_grades`;
+USE `SRM`;
 CREATE  OR REPLACE VIEW `vw_Assignments_with_scores_and_grades` AS
     SELECT 
         idStudents,
-        student_number,
+        Student_reg_number,
         student_fname,
         student_mid_initial,
         student_lname,
@@ -771,14 +785,14 @@ CREATE  OR REPLACE VIEW `vw_Assignments_with_scores_and_grades` AS
         tblLetter_grade_chars ON letter_grade_chars_id = idLetter_grade_chars;
 
 -- -----------------------------------------------------
--- View `LINQ`.`vw_Students_assignments_grades`
+-- View `SRM`.`vw_Students_assignments_grades`
 -- -----------------------------------------------------
-DROP TABLE IF EXISTS `LINQ`.`vw_Students_assignments_grades`;
-USE `LINQ`;
+DROP TABLE IF EXISTS `SRM`.`vw_Students_assignments_grades`;
+USE `SRM`;
 CREATE  OR REPLACE VIEW `vw_Students_assignments_grades` AS
 SELECT 
         idStudents,
-        student_number,
+        Student_reg_number,
         student_fname,
         student_mid_initial,
         student_lname,
@@ -831,14 +845,14 @@ SELECT
         tblLetter_grade_chars ON letter_grade_chars_id = idLetter_grade_chars;
 
 -- -----------------------------------------------------
--- View `LINQ`.`vw_Students_assignments_grades_min`
+-- View `SRM`.`vw_Students_assignments_grades_min`
 -- -----------------------------------------------------
-DROP TABLE IF EXISTS `LINQ`.`vw_Students_assignments_grades_min`;
-USE `LINQ`;
+DROP TABLE IF EXISTS `SRM`.`vw_Students_assignments_grades_min`;
+USE `SRM`;
 CREATE  OR REPLACE VIEW `vw_Students_assignments_grades_min` AS
     SELECT 
         idStudents,
-        student_number,
+        Student_reg_number,
         student_fname,
         student_mid_initial,
         student_lname,
@@ -890,32 +904,32 @@ SET FOREIGN_KEY_CHECKS=@OLD_FOREIGN_KEY_CHECKS;
 SET UNIQUE_CHECKS=@OLD_UNIQUE_CHECKS;
 
 -- -----------------------------------------------------
--- Data for table `LINQ`.`tblLINQ_users`
+-- Data for table `SRM`.`tblLINQ_users`
 -- -----------------------------------------------------
 START TRANSACTION;
-USE `LINQ`;
-INSERT INTO `LINQ`.`tblLINQ_users` (`idLINQ_users`, `user_fname`, `user_lname`, `LINQ_username`, `LINQ_pw`, `LINQ_useremail`, `LINQ_lastlogin`) VALUES (1, 'James', 'Apps', 'japps', 'japps', 'japps@somewhere.com', '2020-04-20');
+USE `SRM`;
+INSERT INTO `SRM`.`tblLINQ_users` (`idLINQ_users`, `user_fname`, `user_lname`, `LINQ_username`, `LINQ_pw`, `LINQ_useremail`, `LINQ_lastlogin`) VALUES (1, 'James', 'Apps', 'japps', 'japps', 'japps@somewhere.com', '2020-04-20');
 
 COMMIT;
 
 -- begin attached script 'script'
 -- this may need removing on first run since an error is given if DROP fails
-DROP USER 'LINQ_admin'@'localhost';
+DROP USER 'SRM_admin'@'localhost';
 
-USE LINQ;
+USE SRM;
 -- CREATE USER username IDENTIFIED BY password
 
--- add the LINQ-server admin (change the password as desired)
+-- add the SRM-server admin (change the password as desired)
 -- it is strongly advised to specifiy the host, either locally with @localhost or remotely, with @ip_address_of_server
 
-CREATE USER 'LINQ_admin'@'localhost' IDENTIFIED BY 'adminpassword';
+CREATE USER 'SRM_admin'@'localhost' IDENTIFIED BY 'adminpassword';
 
 -- grant privileges to the administrator (perform queries, and edit records) and allow the administrator to grant the same privileges to other users
 
-GRANT SELECT, INSERT, UPDATE, DELETE ON linq.* TO 'LINQ_admin'@'localhost' WITH GRANT OPTION;
+GRANT SELECT, INSERT, UPDATE, DELETE ON linq.* TO 'SRM_admin'@'localhost' WITH GRANT OPTION;
 -- end attached script 'script'
 -- begin attached script 'script1'
-USE linq;
+USE SRM;
 
 /*
 This script sets up the database with random, fake entries
