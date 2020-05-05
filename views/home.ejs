@@ -1,0 +1,7 @@
+<% if (!user) { %>
+	<h1>SRM login page</h1>
+	<p>Welcome! Please <a href="/login">log in</a>.</p>
+<% } else { %>
+	<h1>Student Record Management</h1>
+	<p>Hello, <%= user.username %>. View your <a href="/profile">profile</a>.</p>
+<% } %>

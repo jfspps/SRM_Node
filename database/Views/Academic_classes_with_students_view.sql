@@ -4,10 +4,10 @@ CREATE VIEW `vw_Academic_classes_with_students` AS
     FROM
         tblStudents
             JOIN
-        tblacademic_classes ON idStudents = tblacademic_classes.students_id
+        tblAcademic_classes ON idStudents = tblAcademic_classes.Students_id
             JOIN
-        tblSubjects_Teachers_groups ON subjects_teachers_groups_id = idSubjects_teachers_group
+        tblSubjects_Teachers_groups ON Subjects_Teachers_groups_id = idSubjects_teachers_group
             JOIN
-        tblTeachers ON tblSubjects_teachers_groups.teachers_id = idTeachers
+        tblTeachers ON tblSubjects_Teachers_groups.Teachers_id = idTeachers
             JOIN
-        tblSubjects ON tblSubjects_teachers_groups.subjects_id = idSubjects;
+        tblSubjects ON tblSubjects_Teachers_groups.Subjects_id = idSubjects;

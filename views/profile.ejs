@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Record Management SRM</title>
+</head>
+<body>
+    <h1>Student Record Management SRM</h1>
+    <p>Below are your details</p>
+
+    <p>
+        ID: <%= user.id %><br/>
+        Username: <%= user.username %><br/>
+        Name: <%= user.displayName %><br/>
+        <% if (user.emails) { %>
+        Email: <%= user.emails[0].value %><br/>
+        <% } %>
+    </p>
+
+    <h3>Students on list</h3>
+    <p>To date there are <%= studentCount %> students enrolled this year.
+    </p>
+
+    <h3>Log out here</h3>
+    <a href="/logout">Log out</a>
+
+</body>
+</html>

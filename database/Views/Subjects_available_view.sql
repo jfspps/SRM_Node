@@ -1,2 +1,2 @@
 CREATE VIEW `vw_Subjects_available` AS
-select * from tblSubjects left join tblstudents_subjects on idSubjects = tblStudents_Subjects.subjects_id;
+select * from tblSubjects left join tblStudents_Subjects on idSubjects = tblStudents_Subjects.Subjects_id;
