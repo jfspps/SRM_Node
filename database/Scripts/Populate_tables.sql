@@ -33,7 +33,7 @@ VALUES('James', 'Bob', 'T', 'jamesbob@email.com', '02973432'),
 ('Sam', 'Dodds', 'A', 'samdodds21@threo.net', '123097234');
 
 -- PART 2 -------------------------------------------------------------------------------------------------------------------
-INSERT INTO tblGuardians(guardian_fname, guardian_lname, guardian_phone, guardian_email, guardian_2nd_email, students_id) 
+INSERT INTO tblGuardians(guardian_fname, guardian_lname, guardian_phone, guardian_email, guardian_2nd_email, Students_id) 
 VALUES('Frank', 'Bob', '2342523', 'fbob245@email.com', 'paosih@apsoih', 1),
 ('Frank', 'Bob', '2342523', 'fbob245@email.com', 'paosih@apsoih', 2),
 ('Amy', 'Josh', '343534345', 'ajosh22@email.com', 'oaihsd@asfh', 4),
@@ -59,18 +59,18 @@ VALUES('11 Hope St', 'London', 'EJ6', 'UK', 1),
 ('No. 88, Embers Way, Leamington', 'Warwickshire', 'FS33', 'UK', 6),
 ('All Saints, Torquay Way, Torquay', 'Devonshire', 'DV73', 'UK', 7);
 
-INSERT INTO tblStudents_subjects(students_id, subjects_id) VALUES
+INSERT INTO tblStudents_Subjects(Students_id, Subjects_id) VALUES
 (1, 1), (2, 1), (3, 1), (4, 2), (5, 2), (6, 2), (7, 2);
 
-INSERT INTO tblForm_groups(teachers_id, students_id) VALUES
+INSERT INTO tblForm_groups(teachers_id, Students_id) VALUES
 (1, 1), (1, 3), (1, 5), (1, 7),
 (2, 2), (2, 4), (2, 6);
 
-INSERT INTO tblSubjects_teachers_groups(subject_class_name, subjects_id, teachers_id) VALUES
+INSERT INTO tblSubjects_Teachers_groups(subject_class_name, Subjects_id, teachers_id) VALUES
 ('Mathtastic', 1, 2), ('Englooosh', 2, 1);
 
 -- PART 4 -------------------------------------------------------------------------------------------------------------------
-INSERT INTO tblAcademic_classes(subjects_teachers_groups_id, students_id)
+INSERT INTO tblAcademic_classes(subjects_teachers_groups_id, Students_id)
 VALUES(1, 1), (1, 2), (1, 3), (2, 4), (2, 5), (2, 6), (2, 7);
 
 -- PART 5 -------------------------------------------------------------------------------------------------------------------
@@ -94,7 +94,7 @@ VALUES (23, 20, 18, 15, 13), (30, 28, 26, 24, 20), (65, 60, 55, 50, 45), (65, 60
 INSERT INTO tblLetter_grade_chars(Highest_char, High1_char, High2_char, High3_char, Lowest_char)
 VALUES ('A', 'B', 'C', 'D', 'E'), ('a', 'b', 'c', 'd', 'e');
 
-INSERT INTO tblStudent_assignments(assignments_info_id, raw_score, students_id) 
+INSERT INTO tblStudent_assignments(assignments_info_id, raw_score, Students_id) 
 VALUES(1, 20, 4), (1, 21, 5), (1, 18, 6), (1, 19, 7),
 (2, 25, 4), (2, 27, 5), (2, 20, 6), (2, 30, 7),
 (3, 55, 1), (3, 40, 2), (3, 60, 3),
