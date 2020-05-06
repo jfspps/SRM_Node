@@ -1,119 +1,171 @@
-//thanks and appreciation to https://github.com/passport/express-4.x-local-example for much guidance here
+//many thanks to https://www.w3jar.com/node-js-login-and-registration-system-with-express-js-and-mysql/ for help
 
-var express = require('express');
-var passport = require('passport');
-var Strategy = require('passport-local').Strategy;
-var controls = require('./controls');
-var mysql = require('mysql');
+const express = require('express');
+const path = require('path');
+const cookieSession = require('cookie-session');
+const bcrypt = require('bcrypt');
+const dbConnection = require('./controls/database');
+const { body, validationResult } = require('express-validator');
 
-//Configure MySQL ------------------------------------------------------------------------------------
-//establish connections and routing (remember to ALTER USER 'course'@'localhost' IDENTIFIED WITH mysql_native_password BY 'pass&_202LINQ' and 'flush privileges' if needed)
+const app = express();
+app.use(express.urlencoded({extended:false}));
 
-var connection = mysql.createConnection({
-  host     : 'localhost',
-  user     : 'SRM_admin',
-  password : 'admin02passWORD&3',
-  database : 'SRM'
-});
+// SET OUR VIEWS AND VIEW ENGINE
+app.set('views', path.join(__dirname,'views'));
+app.set('view engine','ejs');
 
-// MySQL workbench does not appear to permit new user creation, so via the CLI, use
-// CREATE USER 'SRM_admin' IDENTIFIED BY 'insertPassword';
-// GRANT ALL ON SRM.* TO 'SRM_admin'@'localhost';
+// APPLY COOKIE SESSION MIDDLEWARE
+app.use(cookieSession({
+    name: 'session',
+    keys: ['key1', 'key2'],
+    maxAge:  3600 * 1000 // 1hr
+}));
 
-//Configure Passport ---------------------------------------------------------------------------------
+// DECLARING CUSTOM MIDDLEWARE
+const ifNotLoggedin = (req, res, next) => {
+    if(!req.session.isLoggedIn){
+        return res.render('login-register');
+    }
+    next();
+}
 
-// The local strategy require a `verify` function which receives the credentials
-// (`username` and `password`) submitted by the user.  The function must verify
-// that the password is correct and then invoke `cb` with a user object, which
-// will be set at `req.user` in route handlers after authentication.
-passport.use(new Strategy(
-  function(username, password, cb) {
-    controls.users.findByUsername(username, function(err, user) {
-      if (err) { return cb(err); }
-      if (!user) { return cb(null, false); }
-      if (user.password != password) { return cb(null, false); }
-      return cb(null, user);
+const ifLoggedin = (req,res,next) => {
+    if(req.session.isLoggedIn){
+        return res.redirect('/home');
+    }
+    next();
+}
+// END OF CUSTOM MIDDLEWARE
+
+// ROOT PAGE
+app.get('/', ifNotLoggedin, (req,res,next) => {
+    dbConnection.execute("SELECT `name` FROM `users` WHERE `id`=?",[req.session.userID])
+    .then(([rows]) => {
+        res.render('home',{
+            name:rows[0].name
+        });
     });
-  }));
+    
+});// END OF ROOT PAGE
 
 
-// Configure Passport authenticated session persistence.
+// REGISTER PAGE
+app.post('/register', ifLoggedin, 
+// post data validation(using express-validator)
+[
+    body('user_email','Invalid email address!').isEmail().custom((value) => {
+        return dbConnection.execute('SELECT `email` FROM `users` WHERE `email`=?', [value])
+        .then(([rows]) => {
+            if(rows.length > 0){
+                return Promise.reject('This E-mail already in use!');
+            }
+            return true;
+        });
+    }),
+    body('user_name','Username is Empty!').trim().not().isEmpty(),
+    body('user_pass','The password must be of minimum length 6 characters').trim().isLength({ min: 6 }),
+],// end of post data validation
+(req,res,next) => {
 
-// In order to restore authentication state across HTTP requests, Passport needs
-// to serialize users into and deserialize users out of the session.  The
-// typical implementation of this is as simple as supplying the user ID when
-// serializing, and querying the user record by ID from the database when
-// deserializing.
-passport.serializeUser(function(user, cb) {
-  cb(null, user.id);
+    const validation_result = validationResult(req);
+    const {user_name, user_pass, user_email} = req.body;
+    // IF validation_result HAS NO ERROR
+    if(validation_result.isEmpty()){
+        // password encryption (using bcrypt)
+        bcrypt.hash(user_pass, 12).then((hash_pass) => {
+            // INSERTING USER INTO DATABASE
+            dbConnection.execute("INSERT INTO `users`(`name`,`email`,`password`) VALUES(?,?,?)",[user_name,user_email, hash_pass])
+            .then(result => {
+                res.send(`your account has been created successfully, Now you can <a href="/">Login</a>`);
+            }).catch(err => {
+                // THROW INSERTING USER ERROR'S
+                if (err) throw err;
+            });
+        })
+        .catch(err => {
+            // THROW HASING ERROR'S
+            if (err) throw err;
+        })
+    }
+    else{
+        // COLLECT ALL THE VALIDATION ERRORS
+        let allErrors = validation_result.errors.map((error) => {
+            return error.msg;
+        });
+        // RENDERING login-register PAGE WITH VALIDATION ERRORS
+        res.render('login-register',{
+            register_error:allErrors,
+            old_data:req.body
+        });
+    }
+});// END OF REGISTER PAGE
+
+// LOGIN PAGE
+app.post('/', ifLoggedin, [
+    body('user_email').custom((value) => {
+        return dbConnection.execute('SELECT `email` FROM `users` WHERE `email`=?', [value])
+        .then(([rows]) => {
+            if(rows.length == 1){
+                return true;
+                
+            }
+            return Promise.reject('Invalid Email Address!');
+            
+        });
+    }),
+    body('user_pass','Password is empty!').trim().not().isEmpty(),
+], (req, res) => {
+    const validation_result = validationResult(req);
+    const {user_pass, user_email} = req.body;
+    if(validation_result.isEmpty()){
+        
+        dbConnection.execute("SELECT * FROM `users` WHERE `email`=?",[user_email])
+        .then(([rows]) => {
+            // console.log(rows[0].password);
+            bcrypt.compare(user_pass, rows[0].password).then(compare_result => {
+                if(compare_result === true){
+                    req.session.isLoggedIn = true;
+                    req.session.userID = rows[0].id;
+
+                    res.redirect('/');
+                }
+                else{
+                    res.render('login-register',{
+                        login_errors:['Invalid Password!']
+                    });
+                }
+            })
+            .catch(err => {
+                if (err) throw err;
+            });
+
+
+        }).catch(err => {
+            if (err) throw err;
+        });
+    }
+    else{
+        let allErrors = validation_result.errors.map((error) => {
+            return error.msg;
+        });
+        // RENDERING login-register PAGE WITH LOGIN VALIDATION ERRORS
+        res.render('login-register',{
+            login_errors:allErrors
+        });
+    }
 });
+// END OF LOGIN PAGES
 
-passport.deserializeUser(function(id, cb) {
-  controls.users.findById(id, function (err, user) {
-    if (err) { return cb(err); }
-    cb(null, user);
-  });
-});
-
-
-// Configure Express ------------------------------------------------------------------------------------------
-var app = express();
-
-app.set('views', __dirname + '/views');
-app.set('view engine', 'ejs');
-
-// Use application-level middleware for common functionality, including
-// logging, parsing, and session handling.
-app.use(require('morgan')('combined'));
-app.use(require('body-parser').urlencoded({ extended: true }));
-app.use(require('express-session')({ secret: 'keyboard cat', resave: false, saveUninitialized: false }));
-
-// Initialize Passport and restore authentication state, if any, from the
-// session.
-app.use(passport.initialize());
-app.use(passport.session());
-
-// Define routes.
-app.get('/',
-  function(req, res) {
-    // res.send("Connection to SRM established...");
-    res.render('home', { user: req.user });
-  });
-
-app.get('/login',
-  function(req, res){
-    res.render('login');
-  });
-  
-app.post('/login', 
-  passport.authenticate('local', { failureRedirect: '/login' }),
-  function(req, res) {
+// LOGOUT
+app.get('/logout',(req,res)=>{
+    //session destroy
+    req.session = null;
     res.redirect('/');
-  });
-  
-app.get('/logout',
-  function(req, res){
-    req.logout();
-    res.redirect('/');
+});
+// END OF LOGOUT
+
+app.use('/', (req,res) => {
+    res.status(404).send('<h1>404 Page Not Found!</h1>');
 });
 
-app.get('/profile',
-  require('connect-ensure-login').ensureLoggedIn(),
-  function(req, res){
-    var queryString = "SELECT count(*) AS count FROM tblStudents";
-    var errorString = "Could not find students on the database";
-
-    connection.query(queryString, function(error, results){
-      if (error){
-          console.log(errorString);
-          throw error;
-      };
-      //use count from the SQL statement AS count:
-      // res.send("There are " + results[0].count + " students on the database");
-      res.render('profile', { user: req.user, studentCount: results[0].count });
-    });
-});
-
-app.listen(8080, function(){
-    console.log("Listening to port 8080");
-});
+app.listen(8080, () => console.log("Connected to SRM..."));
