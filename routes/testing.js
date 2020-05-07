@@ -66,5 +66,17 @@ router.get('/testing/p2', ifNotLoggedin, (req,res,next) => {
     });
 });
 
+router.get('/listStudents', function(req, res){
+    var queryString = "SELECT Student_fname, Student_lname, Student_email FROM tblStudents";
+
+    var temp;
+    dbConnection.execute(queryString).then(([rows]) =>
+    rows.forEach(element => {
+        console.log(element);
+        })
+    );
+    res.send('Done');
+});
+
 //send the router object back to whatever requires this module
 module.exports = router;
