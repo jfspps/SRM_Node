@@ -28,7 +28,7 @@ app.use(cookieSession({
 // Logged in users are sent to the home page, otherwise their are sent to the login page
 const ifNotLoggedin = (req, res, next) => {
     if(!req.session.isLoggedIn){
-        return res.render('login');
+        return res.render('login-register');
     }
     next(); //continue with subsequent callbacks
 }
@@ -97,8 +97,8 @@ app.post('/register', ifLoggedin,
         let allErrors = validation_result.errors.map((error) => {
             return error.msg;
         });
-        // RENDERING login PAGE WITH VALIDATION ERRORS
-        res.render('login',{
+        // RENDERING login-register PAGE WITH VALIDATION ERRORS
+        res.render('login-register',{
             register_error:allErrors,
             old_data:req.body
         });
@@ -133,7 +133,7 @@ app.post('/', ifLoggedin, [
                     res.redirect('/');
                 }
                 else{
-                    res.render('login',{
+                    res.render('login-register',{
                         login_errors:['Invalid Password!']
                     });
                 }
@@ -151,8 +151,8 @@ app.post('/', ifLoggedin, [
         let allErrors = validation_result.errors.map((error) => {
             return error.msg;
         });
-        // RENDERING login PAGE WITH LOGIN VALIDATION ERRORS
-        res.render('login',{
+        // RENDERING login-register PAGE WITH LOGIN VALIDATION ERRORS
+        res.render('login-register',{
             login_errors:allErrors
         });
     }
@@ -176,3 +176,4 @@ app.get('*', (req,res) => {
 });
 
 app.listen(8080, () => console.log("Connected to SRM..."));
+//this port can be changed for specific ports with clients
