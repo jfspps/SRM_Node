@@ -3,3 +3,4 @@ $ cat .gitignore
 
 #What's ignored:
 /node_modules
+temp.txt

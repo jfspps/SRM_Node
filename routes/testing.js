@@ -3,7 +3,7 @@ var router = express.Router();
 
 const path = require('path');
 const cookieSession = require('cookie-session');
-const dbConnection = require('../controls/database');
+const dbConnection = require('../dbscripts/database');
 
 // //set Express and views folder for EJS files
 const app = express();
@@ -36,46 +36,48 @@ const ifLoggedin = (req,res,next) => {
 
 //Routing --------------------------------------------------------------------------------------
 
-router.get('/testing', ifNotLoggedin, (req,res,next) => {
+router.get('/testing', ifNotLoggedin, (req,res) => {
     dbConnection.execute("SELECT `name` FROM `users` WHERE `id`=?",[req.session.userID])
     .then(([rows]) => {
         res.render('testing',{
-            //pass the row (should only be one, hence [0]) name field to home.ejs name attribute
             name:rows[0].name
         });
     });
 });
 
-router.get('/testing/p1', ifNotLoggedin, (req,res,next) => {
+router.get('/testing/p1', ifNotLoggedin, (req,res) => {
     dbConnection.execute("SELECT `name` FROM `users` WHERE `id`=?",[req.session.userID])
     .then(([rows]) => {
         res.render('testingP1',{
-            //pass the row (should only be one, hence [0]) name field to home.ejs name attribute
             name:rows[0].name
         });
     });
 });
 
-router.get('/testing/p2', ifNotLoggedin, (req,res,next) => {
+router.get('/testing/p2', ifNotLoggedin, (req,res) => {
     dbConnection.execute("SELECT `name` FROM `users` WHERE `id`=?",[req.session.userID])
     .then(([rows]) => {
         res.render('testingP2',{
-            //pass the row (should only be one, hence [0]) name field to home.ejs name attribute
-            name:rows[0].name
+            name:rows[0].name,
+            studentList:"No data"
         });
     });
 });
 
-router.get('/listStudents', function(req, res){
-    var queryString = "SELECT Student_fname, Student_lname, Student_email FROM tblStudents";
+router.get('/listStudents', ifNotLoggedin, (req, res) => {
+    dbConnection.execute("SELECT `name` FROM `users` WHERE `id`=?",[req.session.userID])
+    .then(([rows]) => {
+        // console.log(rows);
+        var queryString = "SELECT Student_fname, Student_lname, Student_email FROM tblStudents";
 
-    var temp;
-    dbConnection.execute(queryString).then(([rows]) =>
-    rows.forEach(element => {
-        console.log(element);
-        })
-    );
-    res.send('Done');
+        dbConnection.execute(queryString).then(([studentList]) => {
+            // console.log(studentList[1].Student_fname);
+            res.render('testingP2',{
+                name:rows[0].name, 
+                studentList:JSON.stringify(studentList)
+            });
+        });
+    });
 });
 
 //send the router object back to whatever requires this module

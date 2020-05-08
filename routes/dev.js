@@ -3,7 +3,7 @@ var router = express.Router();
 
 const path = require('path');
 const cookieSession = require('cookie-session');
-const dbConnection = require('../controls/database');
+const dbConnection = require('../dbscripts/database');
 
 // //set Express and views folder for EJS files
 const app = express();
@@ -39,9 +39,23 @@ const ifLoggedin = (req,res,next) => {
 router.get('/development', ifNotLoggedin, (req,res,next) => {
     dbConnection.execute("SELECT `name` FROM `users` WHERE `id`=?",[req.session.userID])
     .then(([rows]) => {
-        res.render('development',{
-            //pass the row (should only be one, hence [0]) name field to home.ejs name attribute
-            name:rows[0].name
+        // console.log(rows);
+        var queryString = "SELECT Student_fname, Student_lname, Student_email FROM tblStudents";
+
+        dbConnection.execute(queryString).then(([studentJSON]) => {
+            var tempArray = [];
+            for(i in studentJSON){
+                tempArray.push(
+                    studentJSON[i].Student_fname + " "
+                    + studentJSON[i].Student_lname + ", "
+                    + studentJSON[i].Student_email + "\n");
+            }
+            // console.log(studentList);
+            res.render('development',{
+                name:rows[0].name, 
+                studentTable:tempArray,
+                studentList:studentJSON
+            });
         });
     });
 });
