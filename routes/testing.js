@@ -71,6 +71,7 @@ router.get('/listStudents', ifNotLoggedin, (req, res) => {
         var queryString = "SELECT Student_fname, Student_lname, Student_email FROM tblStudents";
 
         dbConnection.execute(queryString).then(([studentList]) => {
+            // console.log(studentList[1].Student_fname);
             res.render('testingP2',{
                 name:rows[0].name, 
                 studentList:JSON.stringify(studentList)
