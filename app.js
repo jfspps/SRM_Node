@@ -8,7 +8,7 @@ const express = require('express');
 const path = require('path');
 const cookieSession = require('cookie-session');
 const bcrypt = require('bcrypt');
-const dbConnection = require('./controls/database');
+const dbConnection = require('./dbscripts/database');
 const { body, validationResult } = require('express-validator');
 
 //set Express and views folder for EJS files
@@ -171,6 +171,7 @@ app.get('/logout',(req,res)=>{
 app.use(require('./routes/dev'));
 app.use(require('./routes/testing'));
 
+//leave this generic 404 last
 app.get('*', (req,res) => {
     res.status(404).send('<h1>404 Page Not Found!</h1> <p>To login click <a href="/">here</a>.</p>');
 });

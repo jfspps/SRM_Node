@@ -3,7 +3,7 @@ var router = express.Router();
 
 const path = require('path');
 const cookieSession = require('cookie-session');
-const dbConnection = require('../controls/database');
+const dbConnection = require('../dbscripts/database');
 
 // //set Express and views folder for EJS files
 const app = express();
