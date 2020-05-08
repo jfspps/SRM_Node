@@ -46,15 +46,15 @@ router.get('/development', ifNotLoggedin, (req,res,next) => {
             var tempArray = [];
             for(i in studentJSON){
                 tempArray.push(
-                    studentJSON[i].Student_fname + " "
+                    studentJSON[i].Student_fname + ", "
                     + studentJSON[i].Student_lname + ", "
-                    + studentJSON[i].Student_email + "\n");
+                    + studentJSON[i].Student_email);
             }
-            // console.log(studentList);
+            // console.log(tempArray);
+            
             res.render('development',{
                 name:rows[0].name, 
-                studentTable:tempArray,
-                studentList:studentJSON
+                studentTable:tempArray
             });
         });
     });
