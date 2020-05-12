@@ -1,3 +1,5 @@
+<!--many thanks to https://newcodingera.com/datatables-server-side-processing-using-nodejs-mysql/ -->
+
 <%- include("partials/header") %>
     <title>SRM development</title>
 <%- include("partials/navigation") %>
@@ -17,9 +19,23 @@
             </div>
         </div>
         <p>This is the development page. Go to the <a href="/testing"> testing page</a></p>
-        <!-- <p> <%= studentTable %> </p> -->
         <h3>Formatted jQuery Datatable</h3>
         <table id="example" class="display compact" style="width:100%">
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Surname</th>
+                    <th>Email</th>
+                </tr>
+            </thead>
+            <tfoot>
+                <tr>
+                    <th>Name</th>
+                    <th>Surname</th>
+                    <th>Email</th>
+                </tr>
+            </tfoot>
+        </table>
     </div>
 
     
@@ -31,24 +47,14 @@
     <script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/1.10.20/js/jquery.dataTables.js"></script>
     <script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/1.10.20/js/dataTables.bootstrap4.min.js"></script>
     <script>
-        var dataSet = [["James","Bob","jamesbob@email.com"],
-            ["Jane","Bob","jane12432@email.com"],
-            ["Tim","Tom","timetomtam@tim.co.uk"],
-            ["Jake","Josh","whizbang@pop.com"],
-            ["Chris","Smith","chris@someplace.com"],
-            ["Jill","Jungle","Jill93@email.net"],
-            ["Sam","Dodds","samdodds21@threo.net"]
-        ];
-
-        $(document).ready(function() {
-            $('#example').DataTable( {
-                data: dataSet,
-                "columns": [
-                    { title: "Name" },
-                    { title: "Surname" },
-                    { title: "Email" }
-                ]
-            } );
+        $(document).ready(function() {        
+            $(document).ready(function () {
+            var dataTable = $('#example').DataTable({
+                processing: true,
+                serverSide: true,
+                ajax: '/query'
+                });
+            });
         } );
     </script>
   </body>
