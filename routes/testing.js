@@ -27,13 +27,6 @@ const ifNotLoggedin = (req, res, next) => {
     next();
 }
 
-const ifLoggedin = (req,res,next) => {
-    if(req.session.isLoggedIn){
-        return res.redirect('/home');
-    }
-    next();
-}
-
 //Routing --------------------------------------------------------------------------------------
 
 router.get('/testing', ifNotLoggedin, (req,res) => {
