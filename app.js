@@ -138,11 +138,11 @@ app.post('/', ifLoggedin, [
                     });
                 }
             })
+            //track errors due to password confirmation
             .catch(err => {
                 if (err) throw err;
             });
-
-
+            //track errors due to MySQL
         }).catch(err => {
             if (err) throw err;
         });
