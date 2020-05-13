@@ -1,17 +1,17 @@
 # SRM #
 SRM (student record management) is a suite of applications which store and process academic data
 
-__Requirements: NodeJS 13 and MySQL 8__
+__Requirements: NodeJS 13, MySQL 8, Java 11 and Spring MVC 5__
 
 __Installation__
 
-1. Install both the latest versions of NodeJS 13 and MySQL server 8 on a machine, here denoted as the server
+1. Install both the latest versions of the above software to the server
 2. Setup admin account(s) on the MySQL server and perform additional security checks (removing defaults, setting up the firewall and SSH registration)
 3. Install SRM-server and then add users with necessary privileges (admin user details are supplied)
 
 ## Development stages ##
 
-### Overall MySQL schema and NodeJS connections ###
+### Parents' portal (NodeJS) ###
 
 1. MySQL schema design and preparation
 2. NodeJS connections and simple record extraction via console
@@ -24,22 +24,20 @@ Use the currently populated tables to verify students results processing the fol
 2. Mapping to percentage uniform marks (PUM)
 3. Letter grade assignment (comparison between two SQL tables)
 
-Due to MySQL foreign key constraints, the following tables should be populated in the order:
+Construct NodeJS SQL statements and error handling functions.
 
-1. Students
-2. (In no particular order) Guardians, Subjects and Teachers
-3. (In no particular order) Guardians_addresses, Subject_Subjects, Form_groups, Subject_Teachers_groups and Student_reports
-4. Academic_classes
+#### Bootstrap 4 interface (build independently) ####
 
-When the pastoral and academic plans are entered, teachers can then begin entering assignments related data:
+1. Display pages, showing all columns:
+   a. Personal data and school admin entry page
+   b. Assignment info entry page
+   c. Grade threshold entry page
+2. Display pages, with options to select specific columns
+3. More display pages, showing all columns and then with options (as before), for the processing of students' results.*
+		
+Group the individual pages together with a uniform theme and flow.
 
-4. Assignments_info
-5. (In no particular order) Assignments_teacher_info, Grade_thresholds, Letter_grade_chars and  Student_Assignments
-6. Grading Groups
-
-### Construct NodeJS SQL statements and call-back function ###
-
-#### Handling of school admin data entry ####
+#### Student record and data-entry (Java and Spring) ####
 
 1. Personal data-entry and verification (check for duplication and NULL)
    a. Students' personal details
@@ -64,7 +62,7 @@ When the pastoral and academic plans are entered, teachers can then begin enteri
 	
 2. Student assignment info (raw scores) upload and verification. How SRM responds when either records are updated or deleted.
 
-#### Handling of processing of students' scores* ####
+#### Handling of processing of students' scores ####
 
 1. Percentage deduction of individual scores and then grade threshold mapping.
 2. Averages of percentages by component type
@@ -79,24 +77,13 @@ When the pastoral and academic plans are entered, teachers can then begin enteri
 3. Teachers student data of other teachers
 4. Not entering any student results for a previous assignment
 
-#### Bootstrap 4 interface (build independently) ####
-
-1. Display pages, showing all columns:
-   a. Personal data and school admin entry page
-   b. Assignment info entry page
-   c. Grade threshold entry page
-2. Display pages, with options to select specific columns
-3. More display pages, showing all columns and then with options (as before), for the processing of students' results.*
-		
-Group the individual pages together with a uniform theme and flow.
-
 #### User login page ####
 
 Apply the MySQL statements developed earlier and build a welcome page
 
 #### Microsoft Excel XLSX export #####
 
-Develop NodeJS interface with ExcelJS to display, on the first worksheet:
+Develop Spring MVC interface with JExcel or jxls (for example) to display, on the first worksheet:
 
 + Student name
 + Student email address
@@ -130,3 +117,18 @@ Most of the main objectives would be fulfilled at this stage. Future ideas inclu
 + Use of D3 to display trends with data
 + Parents/Guardians web portal
 + Automated student report generator
+
+### MySQL db notes ###
+
+Due to MySQL foreign key constraints, the following tables should be populated in the order:
+
+1. Students
+2. (In no particular order) Guardians, Subjects and Teachers
+3. (In no particular order) Guardians_addresses, Subject_Subjects, Form_groups, Subject_Teachers_groups and Student_reports
+4. Academic_classes
+
+When the pastoral and academic plans are entered, teachers can then begin entering assignments related data:
+
+4. Assignments_info
+5. (In no particular order) Assignments_teacher_info, Grade_thresholds, Letter_grade_chars and  Student_Assignments
+6. Grading Groups

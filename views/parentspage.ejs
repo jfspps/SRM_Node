@@ -10,7 +10,7 @@
             <div class="card-body">
                 <div class="row justify-content-between">
                     <div class="col-5">
-                        <h1>Hello, <%= name %> </h1>
+                        <h1>Current student data</h1>
                     </div>
                     <div class="col-2">
                         <a href="/logout" class="btn btn-lg btn-danger">Logout</a>
@@ -18,21 +18,28 @@
                 </div>
             </div>
         </div>
-        <p>This is the development page. Go to the <a href="/testing"> testing page</a></p>
-        <h3>Formatted jQuery Datatable</h3>
+        <p>Please see below the latest data available. You will be automatically logged out of the system 60 minutes after logging in.</a></p>
         <table id="example" class="display compact" style="width:100%">
             <thead>
                 <tr>
                     <th>Name</th>
                     <th>Surname</th>
-                    <th>Email</th>
+                    <th>Teacher comments</th>
+                    <th>Assignment title</th>
+                    <th>Assignment details</th>
+                    <th>Maximum score</th>
+                    <th>Student's raw score</th>
                 </tr>
             </thead>
             <tfoot>
                 <tr>
                     <th>Name</th>
                     <th>Surname</th>
-                    <th>Email</th>
+                    <th>Teacher comments</th>
+                    <th>Assignment title</th>
+                    <th>Assignment details</th>
+                    <th>Maximum score</th>
+                    <th>Student's raw score</th>
                 </tr>
             </tfoot>
         </table>
@@ -50,10 +57,10 @@
         $(document).ready(function() {        
             $(document).ready(function () {
             var dataTable = $('#example').DataTable({
-                paging: false,
                 processing: true,
                 serverSide: true,
-                ajax: '/query'
+                ajax: '/parentsquery',
+                stateSave: true
                 });
             });
         } );
