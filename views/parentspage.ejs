@@ -29,20 +29,23 @@
                     <th>Assignment details</th>
                     <th>Maximum score</th>
                     <th>Student's raw score</th>
+                    <th>ID</th>
                 </tr>
             </thead>
             <tfoot>
                 <tr>
                     <th>Name</th>
                     <th>Surname</th>
-                    <th>Teacher comments</th>
-                    <th>Assignment title</th>
-                    <th>Assignment details</th>
-                    <th>Maximum score</th>
-                    <th>Student's raw score</th>
+                    <th>Comments</th>
+                    <th>Title</th>
+                    <th>Details</th>
+                    <th>Max score</th>
+                    <th>Raw score</th>
+                    <th>ID</th>
                 </tr>
             </tfoot>
         </table>
+        <p>Admin, the development page is <a href="/development">here</a>.</p>
     </div>
 
     
@@ -55,15 +58,14 @@
     <script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/1.10.20/js/dataTables.bootstrap4.min.js"></script>
     <script>
         $(document).ready(function() {        
-            $(document).ready(function () {
             var dataTable = $('#example').DataTable({
-                processing: true,
+                // processing: true,
                 serverSide: true,
                 ajax: '/parentsquery',
-                stateSave: true
+                stateSave: true,
+                searching : false
                 });
-            });
-        } );
+        });
     </script>
   </body>
 </html>

@@ -29,6 +29,8 @@ app.use(cookieSession({
 const ifNotLoggedin = (req, res, next) => {
     if(!req.session.isLoggedIn){
         return res.render('login');
+        //change this if a new user is needed
+        // return res.render('login-register');
     }
     next(); //continue with subsequent callbacks
 }
@@ -49,6 +51,15 @@ app.get('/', ifNotLoggedin, (req,res,next) => {
             //pass the row (should only be one, hence [0]) 'name' field to home.ejs 'name' attribute
             name:rows[0].name
         });
+    });
+});
+
+app.get('/register', ifNotLoggedin, (req,res) => {
+    dbConnection.execute("SELECT `name` FROM `users` WHERE `id`=?",[req.session.userID])
+    .then(([rows]) => {          
+            res.render('login-register',{
+                name : rows[0].name
+            })
     });
 });
 
@@ -81,7 +92,7 @@ app.post('/register', ifLoggedin,
             // INSERTING USER INTO DATABASE
             dbConnection.execute("INSERT INTO `users`(`name`,`email`,`password`) VALUES(?,?,?)",[user_name,user_email, hash_pass])
             .then(result => {
-                res.send(`your account has been created successfully, Now you can <a href="/">Login</a>`);
+                res.send(`Your account has been created successfully, Now you can <a href="/">Login</a>`);
             }).catch(err => {
                 // THROW INSERTING USER ERROR'S
                 if (err) throw err;
@@ -170,6 +181,7 @@ app.get('/logout',(req,res)=>{
 // External routing
 app.use(require('./routes/dev'));
 app.use(require('./routes/testing'));
+app.use(require('./routes/nodetable'));
 
 //leave this generic 404 last
 app.get('*', (req,res) => {

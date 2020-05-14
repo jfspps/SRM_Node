@@ -5,6 +5,7 @@ const dbConnection = mysql.createPool({
     password : 'admin02passWORD&3',    
     database : 'SRM'      
 }).promise();
+
 module.exports = dbConnection;
 
 //MySQL script for the table SRM.users
