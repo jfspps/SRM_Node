@@ -44,14 +44,42 @@ const ifLoggedin = (req,res,next) => {
 
 //Routing --------------------------------------------------------------------------------------
 
+// app.get('/', ifNotLoggedin, (req,res,next) => {
+//     dbConnection.execute("SELECT `name` FROM `users` WHERE `id`=?",[req.session.userID])
+//     .then(([rows]) => {
+//         res.render('home',{
+//             //pass the row (should only be one, hence [0]) 'name' field to home.ejs 'name' attribute
+//             name:rows[0].name
+//         });
+//     });
+// });
+
 app.get('/', ifNotLoggedin, (req,res,next) => {
-    dbConnection.execute("SELECT `name` FROM `users` WHERE `id`=?",[req.session.userID])
+    //retrieve the logged in user's name and email, store it in rows (no other column from 'users' is stored)
+    dbConnection.execute("SELECT `name`, `email` FROM `users` WHERE `id`=?",[req.session.userID])
     .then(([rows]) => {
-        res.render('home',{
-            //pass the row (should only be one, hence [0]) 'name' field to home.ejs 'name' attribute
-            name:rows[0].name
-        });
-    });
+        console.log("Username: " + rows[0].name + ", email: " + rows[0].email);
+        //...match their email with "student's ID" and store the id(s) in rows2 (can expect >=1 result)
+        dbConnection.execute("SELECT `Students_id` FROM `tblGuardians` WHERE `Guardian_email`=?",[rows[0].email])
+        .then(([rows2]) => {
+            console.log(rows2.length);
+            var nameList = [];
+            //find the names from all necessary student IDs
+            for (i = 0; i < rows2.length; i++){
+                //store students' name in rows3
+                dbConnection.execute("SELECT `Student_fname` FROM `tblStudents` WHERE `idStudents`=?",[rows2[i].Students_id])
+                .then(([[tempName]]) => {
+                    console.log(tempName.Student_fname);
+                    nameList.push(tempName.Student_fname);
+                }                
+            )}
+            // console.log(nameList);
+            res.render('home',{
+                name : rows[0].name,
+                // studentList : nameList.join() //join each name, convert to a string
+            })
+        })
+    })
 });
 
 app.get('/register', ifNotLoggedin, (req,res) => {

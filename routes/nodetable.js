@@ -2,13 +2,14 @@
 
 const express = require('express');
 var router = express.Router();
+const mysql = require('mysql2');
 
 const path = require('path');
 const cookieSession = require('cookie-session');
 const dbConnection = require('../dbscripts/database');
 const NodeTableDB = require('../dbscripts/NodetableDB');
 const bodyParser = require('body-parser');
-const fs = require('fs');
+// const fs = require('fs');
 
 //needed to handle server side MySQL
 const NodeTable = require("nodetable");
@@ -136,7 +137,9 @@ router.get('/parentsquery', ifNotLoggedin, (req,res) => {
 
                 // Custom SQL query (pass after the second parameter dbConnection in Nodetable() below)
                 // The terminating semicolon is not expected
-                const query = "SELECT * FROM tempData WHERE raw_score > 29";
+                // const query = "SELECT * FROM tempData WHERE student_fname LIKE ?", [firstName];
+                const MySQLquery = "SELECT * FROM tempData WHERE idStudents = ?";
+                var query = mysql.format(MySQLquery, [rows2[0].Students_id]);
 
                 //either tablename or query is the third parameter, not both
                 const nodeTable = new NodeTable(tableQuery, NodeTableDB, query, primaryKey, columnsMap);
