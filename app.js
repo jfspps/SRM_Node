@@ -29,6 +29,8 @@ app.use(cookieSession({
 const ifNotLoggedin = (req, res, next) => {
     if(!req.session.isLoggedIn){
         return res.render('login');
+        //change this if a new user is needed
+        // return res.render('login-register');
     }
     next(); //continue with subsequent callbacks
 }
@@ -42,13 +44,50 @@ const ifLoggedin = (req,res,next) => {
 
 //Routing --------------------------------------------------------------------------------------
 
+// app.get('/', ifNotLoggedin, (req,res,next) => {
+//     dbConnection.execute("SELECT `name` FROM `users` WHERE `id`=?",[req.session.userID])
+//     .then(([rows]) => {
+//         res.render('home',{
+//             //pass the row (should only be one, hence [0]) 'name' field to home.ejs 'name' attribute
+//             name:rows[0].name
+//         });
+//     });
+// });
+
 app.get('/', ifNotLoggedin, (req,res,next) => {
-    dbConnection.execute("SELECT `name` FROM `users` WHERE `id`=?",[req.session.userID])
+    //retrieve the logged in user's name and email, store it in rows (no other column from 'users' is stored)
+    dbConnection.execute("SELECT `name`, `email` FROM `users` WHERE `id`=?",[req.session.userID])
     .then(([rows]) => {
-        res.render('home',{
-            //pass the row (should only be one, hence [0]) 'name' field to home.ejs 'name' attribute
-            name:rows[0].name
-        });
+        console.log("Username: " + rows[0].name + ", email: " + rows[0].email);
+        //...match their email with "student's ID" and store the id(s) in rows2 (can expect >=1 result)
+        dbConnection.execute("SELECT `Students_id` FROM `tblGuardians` WHERE `Guardian_email`=?",[rows[0].email])
+        .then(([rows2]) => {
+            console.log(rows2.length);
+            var nameList = [];
+            //find the names from all necessary student IDs
+            for (i = 0; i < rows2.length; i++){
+                //store students' name in rows3
+                dbConnection.execute("SELECT `Student_fname` FROM `tblStudents` WHERE `idStudents`=?",[rows2[i].Students_id])
+                .then(([[tempName]]) => {
+                    console.log(tempName.Student_fname);
+                    nameList.push(tempName.Student_fname);
+                }                
+            )}
+            // console.log(nameList);
+            res.render('home',{
+                name : rows[0].name,
+                // studentList : nameList.join() //join each name, convert to a string
+            })
+        })
+    })
+});
+
+app.get('/register', ifNotLoggedin, (req,res) => {
+    dbConnection.execute("SELECT `name` FROM `users` WHERE `id`=?",[req.session.userID])
+    .then(([rows]) => {          
+            res.render('login-register',{
+                name : rows[0].name
+            })
     });
 });
 
@@ -81,7 +120,7 @@ app.post('/register', ifLoggedin,
             // INSERTING USER INTO DATABASE
             dbConnection.execute("INSERT INTO `users`(`name`,`email`,`password`) VALUES(?,?,?)",[user_name,user_email, hash_pass])
             .then(result => {
-                res.send(`your account has been created successfully, Now you can <a href="/">Login</a>`);
+                res.send(`Your account has been created successfully, Now you can <a href="/">Login</a>`);
             }).catch(err => {
                 // THROW INSERTING USER ERROR'S
                 if (err) throw err;
@@ -170,6 +209,7 @@ app.get('/logout',(req,res)=>{
 // External routing
 app.use(require('./routes/dev'));
 app.use(require('./routes/testing'));
+app.use(require('./routes/nodetable'));
 
 //leave this generic 404 last
 app.get('*', (req,res) => {
