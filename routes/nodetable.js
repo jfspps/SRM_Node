@@ -143,10 +143,10 @@ router.get('/parentsquery', ifNotLoggedin, (req,res) => {
 
                 // Custom SQL query (pass after the second parameter dbConnection in Nodetable() below)
                 // The terminating semicolon is not expected
-                // const query = "SELECT student_fname, student_lname, comments_for_guardian, assignment_title, assignment_detail, max_raw_score, raw_score, idStudents FROM tempData WHERE raw_score > 29";
+                const query = "SELECT student_fname, student_lname, comments_for_guardian, assignment_title, assignment_detail, max_raw_score, raw_score, idStudents, PK_id FROM tempData WHERE raw_score > 29";
 
                 //either tablename or query is the third parameter, not both
-                const nodeTable = new NodeTable(tableQuery, NodeTableDB, tableName, primaryKey, columnsMap);
+                const nodeTable = new NodeTable(tableQuery, NodeTableDB, query, primaryKey, columnsMap);
 
                 nodeTable.output((err, data)=>{
                     if (err) {
