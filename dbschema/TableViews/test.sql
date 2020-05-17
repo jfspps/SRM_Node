@@ -1,28 +1,19 @@
-DROP TABLE tempData; 
+USE SRM;
 
-CREATE TABLE tempData AS SELECT idStudents,
-    student_fname,
-    student_lname,
-    comments_for_guardian,
-    assignment_title,
-    assignment_detail,
-    max_raw_score,
-    raw_score FROM
-    vw_Students_assignments_grades;
+DROP TABLE `tempData`; 
 
-ALTER TABLE tempData ADD COLUMN PK_id INT;
+CREATE TABLE `tempData` AS SELECT idStudents,
+    `student_fname`,
+    `student_lname`,
+    `comments_for_guardian`,
+    `assignment_title`,
+    `assignment_detail`,
+    `max_raw_score`,
+    `raw_score` FROM
+    `vw_Students_assignments_grades`;
 
-ALTER TABLE tempData MODIFY COLUMN PK_id INT auto_increment PRIMARY KEY;
+ALTER TABLE `tempData` ADD COLUMN `PK_id` INT;
 
--- SELECT 
---     student_fname,
---     student_lname,
---     comments_for_guardian,
---     assignment_title,
---     assignment_detail,
---     max_raw_score,
---     raw_score
--- FROM
---     tempData
--- WHERE
---     idStudents = 1;
+ALTER TABLE `tempData` MODIFY COLUMN `PK_id` INT AUTO_INCREMENT PRIMARY KEY;
+
+ALTER TABLE `tempData` ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;

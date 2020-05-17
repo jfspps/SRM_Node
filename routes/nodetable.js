@@ -80,6 +80,7 @@ router.get('/query', ifNotLoggedin, (req,res) => {
 
 router.get('/parentsquery', ifNotLoggedin, (req,res) => {
     //get user's email address...
+    const tableQuery = req.query; 
     dbConnection.execute("SELECT `email` FROM `users` WHERE `id`=?",[req.session.userID])
     .then(([rows]) => {         
         console.log('Email: ' + rows[0].email);
@@ -95,15 +96,15 @@ router.get('/parentsquery', ifNotLoggedin, (req,res) => {
                     //     if (err) throw err;
                     //     console.log('Saved!');
                     //   });
-                //prepares the order in which columns appear (effectively substitutes the SQL query statement)
-                var tableQuery = req.query; 
+                // prepares the order in which columns appear (effectively substitutes the SQL query statement)
+                // take real care with case sensitivity!
                 let columnsMap = [
                         {
-                            db: "Student_fname",
+                            db: "student_fname",
                             dt: 0
                         },
                         {
-                            db: "Student_lname",
+                            db: "student_lname",
                             dt: 1
                         },
                         {
@@ -125,17 +126,9 @@ router.get('/parentsquery', ifNotLoggedin, (req,res) => {
                         {
                             db: "raw_score",
                             dt: 6
-                        },
-                        {
-                            db: "idStudents",
-                            dt: 7
-                        },
-                        {
-                            db: "PK_id",
-                            dt: 8
                         }
                     ]
-                // our database table name (see /schema/tableviews); comment this out if custom query is needed
+                // our database table name (see /schema/tableviews); can comment this out if custom `query` is needed
                 const tableName = "tempData";
 
                 // NodeTable requires table's primary key to work properly
@@ -143,7 +136,7 @@ router.get('/parentsquery', ifNotLoggedin, (req,res) => {
 
                 // Custom SQL query (pass after the second parameter dbConnection in Nodetable() below)
                 // The terminating semicolon is not expected
-                const query = "SELECT student_fname, student_lname, comments_for_guardian, assignment_title, assignment_detail, max_raw_score, raw_score, idStudents, PK_id FROM tempData WHERE raw_score > 29";
+                const query = "SELECT * FROM tempData WHERE raw_score > 29";
 
                 //either tablename or query is the third parameter, not both
                 const nodeTable = new NodeTable(tableQuery, NodeTableDB, query, primaryKey, columnsMap);
