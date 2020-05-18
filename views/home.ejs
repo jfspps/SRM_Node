@@ -16,9 +16,14 @@
                 </div>
             </div>
         </div>
-        <p>
-            By default, SRM will list the student record whose details which were stored <a href="/parentspage">first</a>. If you want to view a particular record (e.g. their sibling) please enter the first name here:
-        </p>
+        <table id="studentList" class="display compact" style="width:100%">
+            <thead>
+                <tr>
+                    <th>Here are the student(s) who are registered under your account:</th>
+                    <!-- could add summary of results here -->
+                </tr>
+            </thead>
+        </table>
         <p>
             To ensure that student's data are kept safe, please remember to logout by clicking the <i>Logout</i> button when finished.
         </p>
@@ -26,4 +31,24 @@
             Admin, the development page is <a href="/development">here</a>.
         </p>
     </div>
-<%- include("partials/footer") %>
+
+    <!-- Optional JavaScript -->
+    <!-- jQuery first, then Popper.js, then Bootstrap JS -->
+    <script type="text/javascript" charset="utf8" src="https://code.jquery.com/jquery-3.3.1.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js" integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo" crossorigin="anonymous"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js" integrity="sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6" crossorigin="anonymous"></script>
+    <script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/1.10.20/js/jquery.dataTables.js"></script>
+    <script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/1.10.20/js/dataTables.bootstrap4.min.js"></script>
+    <script>
+        $(document).ready(function() {        
+            var dataTable = $('#studentList').DataTable({
+                // processing: true,
+                serverSide: true,
+                ajax: '/parentsPortal',
+                stateSave: true,
+                searching : false
+                });
+        });
+    </script>
+  </body>
+</html>

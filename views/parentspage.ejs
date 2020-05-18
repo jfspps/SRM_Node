@@ -19,7 +19,7 @@
             </div>
         </div>
         <p>Please see below the latest data available. You will be automatically logged out of the system 60 minutes after logging in.</a></p>
-        <table id="example" class="display compact" style="width:100%">
+        <table id="parentsLogin" class="display compact" style="width:100%">
             <thead>
                 <tr>
                     <th>Name</th>
@@ -56,10 +56,10 @@
     <script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/1.10.20/js/dataTables.bootstrap4.min.js"></script>
     <script>
         $(document).ready(function() {        
-            var dataTable = $('#example').DataTable({
+            var dataTable = $('#parentsLogin').DataTable({
                 // processing: true,
                 serverSide: true,
-                ajax: '/parentsquery',
+                ajax: '/parentsQuery',
                 stateSave: true,
                 searching : false
                 });

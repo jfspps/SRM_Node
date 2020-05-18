@@ -37,7 +37,7 @@ const ifNotLoggedin = (req, res, next) => {
 
 //Routing --------------------------------------------------------------------------------------
 
-
+//template for developers
 router.get('/query', ifNotLoggedin, (req,res) => {
     // NodeTableDB.connect();
     console.log('Query received'); 
@@ -79,7 +79,8 @@ router.get('/query', ifNotLoggedin, (req,res) => {
     })
 });
 
-router.get('/parentsquery', ifNotLoggedin, (req,res) => {
+//send parents their own child's data only
+router.get('/parentsQuery', ifNotLoggedin, (req,res) => {
     //get user's email address...
     const tableQuery = req.query; 
     dbConnection.execute("SELECT `email` FROM `users` WHERE `id`=?",[req.session.userID])
@@ -161,6 +162,60 @@ router.get('/parentsquery', ifNotLoggedin, (req,res) => {
         // }).catch((err) => {
         //     if (err) console.log(err);
         })
+    })
+});
+
+//send parents the names of their child's names on record
+router.get('/parentsPortal', ifNotLoggedin, (req,res,next) => {
+    //retrieve the logged in user's name and email, store it in rows (no other column from 'users' is stored)
+    const tableQuery = req.query; 
+    dbConnection.execute("SELECT `name`, `email` FROM `users` WHERE `id`=?",[req.session.userID])
+    .then(([NamesEmails]) => {
+        console.log("Username: " + NamesEmails[0].name + ", email: " + NamesEmails[0].email);
+        //...match their email with "student's ID" and store the id(s) in rows2 (can expect >=1 result)
+        dbConnection.execute("SELECT `Students_id` FROM `tblGuardians` WHERE `Guardian_email`=?",[NamesEmails[0].email])
+        .then(([IDs]) => {
+            if(IDs.length === 0){
+                console.log("Number of students registered under " + NamesEmails[0].name + " : " + IDs.length);
+                res.send({
+                    draw: '1',
+                    recordsTotal: 1,
+                    recordsFiltered: 1,
+                    data: [ { '0': 'No data on file' } ]
+                  });
+            } else {
+                console.log("Number of students registered under " + NamesEmails[0].name + " : " + IDs.length);
+                let columnsMap = [
+                    {
+                        db: "Student_fname",
+                        dt: 0
+                    }
+                ];
+                const primaryKey = "idStudents";
+
+                //currently allow for up to five students to be registered under each Guardian
+                const MySQLquery = "SELECT * FROM tblStudents WHERE idStudents = ?";
+                var query = mysql.format(MySQLquery, [IDs[0].Students_id]);
+
+                const nodeTable = new NodeTable(tableQuery, NodeTableDB, query, primaryKey, columnsMap);
+
+                nodeTable.output((err, data)=>{
+                    if (err) {
+                        console.log(err);
+                        return;
+                    }
+                    // console.log(data);
+                    // Directly send this data as output to Datatable
+                        res.send(data)
+                })
+            }
+        })               
+        .catch(err => {
+            console.log("Problem with username and email retrieval:\n" + err);
+        })
+    })
+    .catch(err => {
+        console.log("Problem with user ID:\n" + err);
     })
 });
 
