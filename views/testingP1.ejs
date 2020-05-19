@@ -8,7 +8,7 @@
             <div class="card-body">
                 <div class="row justify-content-between">
                     <div class="col-5">
-                        <h1>Hello, <%= name %> </h1>
+                        <h1>Testing page one</h1>
                     </div>
                     <div class="col-2">
                         <a href="/logout" class="btn btn-lg btn-danger">Logout</a>
@@ -16,7 +16,13 @@
                 </div>
             </div>
         </div>
-        <p>On test page one. Go to the <a href="/development"> development page</a></p>
-        <p>Click here to <a href="/listStudents" class="btn btn-md btn-primary">list students</a>. </p>
+        <p>Hello, <%= name %>. You are currently on test page one, which demonstrates event handling in with Bootstrap buttons, representing the bsaic step to extracting data from MySQL and presenting it mostly unformatted.</p>
+        <p>Click here to <a href="/listStudents" class="btn btn-md btn-primary">list students</a> and get sent to page two.</p>
+        <p>
+            The <a href="/">home page</a> tests /parentsPortal and lists the first names of students they are registered for. The <a href="/parentspage">parentspage</a> tests /parentsQuery and lists the academic record of students they are registered for.
+        </p>
+        <p>
+            The <a href="/development">development page</a> is included for admin purposes, tests /query and lists all students' names.
+        </p>
     </div>
 <%- include("partials/footer") %>

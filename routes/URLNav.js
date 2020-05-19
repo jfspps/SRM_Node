@@ -29,6 +29,9 @@ const ifNotLoggedin = (req, res, next) => {
 
 //Routing --------------------------------------------------------------------------------------
 
+//the Homepage (which returns a list of students names for whom they are registered under) is handled by get("/"); see app.js
+
+//running /parentspage triggers the /parentsQuery GET command (get all student records for whom they are registered under)
 router.get('/parentspage', ifNotLoggedin, (req,res) => {
     dbConnection.execute("SELECT `name` FROM `users` WHERE `id`=?",[req.session.userID])
     .then(([rows]) => {          
@@ -38,6 +41,7 @@ router.get('/parentspage', ifNotLoggedin, (req,res) => {
     });
 });
 
+//running /development triggers the /query GET command (generic list of all students' names and email addresses)
 router.get('/development', ifNotLoggedin, (req,res) => {
     dbConnection.execute("SELECT `name` FROM `users` WHERE `id`=?",[req.session.userID])
     .then(([rows]) => {          

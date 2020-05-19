@@ -37,9 +37,10 @@ app.use(bodyParser.json());
 // Logged in users are sent to the home page, otherwise their are sent to the login page
 const ifNotLoggedin = (req, res, next) => {
     if(!req.session.isLoggedIn){
-        return res.render('login');
-        //change this if a new user is needed
-        // return res.render('login-register');
+        //comment/uncomment as required
+
+        // return res.render('login');
+        return res.render('register');
     }
     next(); //continue with subsequent callbacks
 }
@@ -188,7 +189,7 @@ app.get('/logout',(req,res)=>{
 // END OF LOGOUT
 
 // External routing
-app.use(require('./routes/dev'));
+app.use(require('./routes/URLNav'));
 app.use(require('./routes/testing'));
 app.use(require('./routes/nodetable'));
 
