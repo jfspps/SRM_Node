@@ -5,9 +5,13 @@ __Requirements: NodeJS 13, MySQL 8, Java 11 and Spring MVC 5__
 
 __Installation__
 
-1. Install both the latest versions of the above software to the server
-2. Setup admin account(s) on the MySQL server and perform additional security checks (removing defaults, setting up the firewall and SSH registration)
-3. Install SRM-server and then add users with necessary privileges (admin user details are supplied)
+1. Clone the repo and then `npm install` in `/SRM`.
+2. FYI, Datatables, Bootstrap and JQuery are referenced by CDNs (see `/partials`).
+3. Ensure that MySQL 8 (or above) is installed and passwords set to MEDIUM (Linux Mint users can go [here](https://linux4one.com/how-to-install-mysql-on-linux-mint-19/))
+4. Either rebuild SRM db by forward engineering in MySQL workbench or by running the script `/dbschema/SRM_SQL_build.sql`. When building the db for the first time, comment out (--) the `DROP USER 'SRM_admin'@'localhost';` statement (MySQL flags an error if the user does not already exist on the db).
+5. Build the tempData table by running the script /dbschema/TableViews/test.sql. This is intended to be a temporary step, until the Java backend is built.
+6. Run `node app.js` from /SRM.
+7. Login and register under any details for basic access. Use one of the parents' login details to access student data.
 
 ## Development stages ##
 
