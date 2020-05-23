@@ -67,7 +67,7 @@ app.get('/', ifNotLoggedin, (req,res,next) => {
 app.get('/register', ifNotLoggedin, (req,res) => {
     dbConnection.execute("SELECT `name` FROM `users` WHERE `id`=?",[req.session.userID])
     .then(([rows]) => {          
-            res.render('login-register',{
+            res.render('register',{
                 name : rows[0].name
             })
     });
