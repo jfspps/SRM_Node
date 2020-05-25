@@ -7,7 +7,7 @@ __Installation__
 
 1. Clone the repo and then `npm install` in `/SRM`.
 2. FYI, Datatables, Bootstrap and JQuery are referenced by CDNs (see `/partials`).
-3. Ensure that MySQL 8 (or above) is installed and passwords set to MEDIUM (Linux Mint users can go [here](https://linux4one.com/how-to-install-mysql-on-linux-mint-19/))
+3. Ensure that MySQL 8 (or above) is installed and passwords set to MEDIUM (Linux Mint users can go [here](https://medium.com/@shivraj.jadhav82/mysql-setup-on-linux-mint-948470115d5))
 4. Either rebuild SRM db by forward engineering in MySQL workbench or by running the script `/dbschema/SRM_SQL_build.sql`. When building the db for the first time, comment out (--) the `DROP USER 'SRM_admin'@'localhost';` statement (MySQL flags an error if the user does not already exist on the db).
 5. Build the tempData table by running the script /dbschema/TableViews/test.sql. This is intended to be a temporary step, until the Java backend is built.
 6. Run `node app.js` from /SRM.
