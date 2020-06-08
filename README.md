@@ -30,7 +30,7 @@ Use the currently populated tables to verify students results processing the fol
 
 Construct NodeJS SQL statements and error handling functions.
 
-#### Bootstrap 4 interface####
+#### Bootstrap 4 interface ####
 
 1. Display pages, showing all columns:
    a. Personal data and school admin entry page
