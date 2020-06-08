@@ -1,7 +1,7 @@
 # SRM #
 SRM (student record management) is a suite of applications which store and process academic data
 
-__Requirements: NodeJS 13, MySQL 8, Java 11 and Spring MVC 5__
+__Frameworks and tools: NodeJS 13, MySQL 8, Java 11 and Spring MVC 5__
 
 __Installation__
 
@@ -11,7 +11,7 @@ __Installation__
 4. Either rebuild SRM db by forward engineering in MySQL workbench or by running the script `/dbschema/SRM_SQL_build.sql`. When building the db for the first time, comment out (--) the `DROP USER 'SRM_admin'@'localhost';` statement (MySQL flags an error if the user does not already exist on the db).
 5. Build the tempData table by running the script /dbschema/TableViews/test.sql. This is intended to be a temporary step, until the Java backend is built.
 6. Run `node app.js` from /SRM.
-7. Login and register under any details for basic access. Use one of the parents' login details to access student data.
+7. Register and login under any details for basic access. Register using one of the parents' login details (e.g. fbob245@email.com from /dbSchema/Scripts/Populate_tables.sql) with any password, and then login to access student data.
 
 ## Development stages ##
 
@@ -30,7 +30,7 @@ Use the currently populated tables to verify students results processing the fol
 
 Construct NodeJS SQL statements and error handling functions.
 
-#### Bootstrap 4 interface (build independently) ####
+#### Bootstrap 4 interface####
 
 1. Display pages, showing all columns:
    a. Personal data and school admin entry page
