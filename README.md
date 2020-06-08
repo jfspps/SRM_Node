@@ -22,7 +22,7 @@ __Installation__
 
 3. Teacher authentication and authorisation testing
 
-Use the currently populated tables to verify students results processing the following:
+TODO: Use the currently populated tables to verify students results processing the following:
 
 1. Averages by component (homework, test, mock exams, coursework etc.)
 2. Mapping to percentage uniform marks (PUM)
