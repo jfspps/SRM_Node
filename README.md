@@ -22,7 +22,7 @@ __Installation__
 
 3. Teacher authentication and authorisation testing
 
-TODO: Use the currently populated tables to verify students results processing the following:
+Use the currently populated tables to verify students results processing the following:
 
 1. Averages by component (homework, test, mock exams, coursework etc.)
 2. Mapping to percentage uniform marks (PUM)
@@ -41,7 +41,7 @@ Construct NodeJS SQL statements and error handling functions.
 		
 Group the individual pages together with a uniform theme and flow.
 
-#### Student record and data-entry (Java and Spring) TODO ####
+#### Student record and data-entry (Java and Spring) ####
 
 1. Personal data-entry and verification (check for duplication and NULL)
    a. Students' personal details
@@ -57,7 +57,7 @@ Group the individual pages together with a uniform theme and flow.
    a. Assigning students and teachers to specific classes
    b. How SRM responds when either records are updated or deleted
 
-#### Handling of assignment and threshold data entry TODO ####
+#### Handling of assignment and threshold data entry ####
 	
 1. Assignment info data-entry and verification (check for duplication and NULL)
    a. Components of all types
@@ -66,7 +66,7 @@ Group the individual pages together with a uniform theme and flow.
 	
 2. Student assignment info (raw scores) upload and verification. How SRM responds when either records are updated or deleted.
 
-#### Handling of processing of students' scores TODO ####
+#### Handling of processing of students' scores ####
 
 1. Percentage deduction of individual scores and then grade threshold mapping.
 2. Averages of percentages by component type
@@ -74,18 +74,18 @@ Group the individual pages together with a uniform theme and flow.
 4. PUM mapping of individual scores
 5. Overall, end-of-year scores based on weighted component scores
 	
-#### Error-checking and feedback TODO ####
+#### Error-checking and feedback ####
 
 1. Entering raw scores > max_raw score
 2. Entering unexpected data types: input 'A' instead of MySQL INT
 3. Teachers student data of other teachers
 4. Not entering any student results for a previous assignment
 
-#### User login page TODO ####
+#### User login page ####
 
 Apply the MySQL statements developed earlier and build a welcome page
 
-#### Microsoft Excel XLSX export TODO #####
+#### Microsoft Excel XLSX export #####
 
 Develop Spring MVC interface with JExcel or jxls (for example) to display, on the first worksheet:
 
@@ -109,7 +109,7 @@ On the third worksheet:
 
 Develop the worksheet further so that the user can select which elements to print and on which worksheet. See how the font size and number of characters influences the cell size...
 
-#### Other database-independent settings to save on SRM-server TODO ####
+#### Other database-independent settings to save on SRM-server ####
 
 Save above settings to a separate table in SRM? Need to also store:
 
