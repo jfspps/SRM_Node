@@ -1,5 +1,5 @@
 # Student Record Management SRM #
-This project is a skeleton to the frontend of SRM (student record management). The main program, which was initially planned to be developed with Node, Datatables, and MySQL, is now being developed in Spring 5. The Java based repo is here.
+This project is a skeleton to the frontend of SRM (student record management). The main program, which was initially planned to be developed with Node, Datatables, and MySQL, is now being developed in Spring 5. The Java based repo is [here](https://github.com/jfspps/SRM-Spring).
 
 __Frameworks and tools: NodeJS 13 and MySQL 8__
 
