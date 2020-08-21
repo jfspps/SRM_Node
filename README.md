@@ -8,7 +8,7 @@ __Installation__
 1. Clone the repo and then `npm install` in `/SRM`.
 2. FYI, Datatables, Bootstrap and JQuery are referenced by CDNs (see `/partials`).
 3. Ensure that MySQL 8 (or above) is installed and passwords set to MEDIUM (Linux Mint users can go [here](https://medium.com/@shivraj.jadhav82/mysql-setup-on-linux-mint-948470115d5))
-4. Either rebuild SRM db by forward engineering in MySQL workbench or by running the script `/dbschema/SRM_SQL_build.sql`. When building the db for the first time, comment out (--) the `DROP USER 'SRM_admin'@'localhost';` statement (MySQL flags an error if the user does not already exist on the db).
+4. Either rebuild SRM db by forward engineering in MySQL workbench or by running the [script](/dbschema/SRM_SQL_build.sql). When building the db for the first time, comment out (--) the `DROP USER 'SRM_admin'@'localhost';` statement (MySQL flags an error if the user does not already exist on the db).
 5. Build the tempData table by running the script /dbschema/TableViews/test.sql. This is intended to be a temporary step (eventually provided by a Java based backend).
 6. Run `node app.js` from /SRM.
 7. Register and login under any details for basic access. Register using one of the parents' login details (e.g. fbob245@email.com from /dbSchema/Scripts/Populate_tables.sql) with any name and password, and then login to access examples of student data.
@@ -39,4 +39,17 @@ Construct NodeJS SQL statements and error handling functions.
 2. Display pages, with options to select specific columns
 3. More display pages, showing all columns and then with options (as before), for the processing of students' results.
 		
-This project is very much a learning process, and I have retained a few features which are supported by data persistence. The UI 
+#### Parents' portal MySQL notes ####
+
+Due to MySQL foreign key constraints, the following tables should be populated in the order:
+
+1. Students
+2. (In no particular order) Guardians, Subjects and Teachers
+3. (In no particular order) Guardians_addresses, Subject_Subjects, Form_groups, Subject_Teachers_groups and Student_reports
+4. Academic_classes
+
+When the pastoral and academic plans are entered, teachers can then begin entering assignments related data:
+
+4. Assignments_info
+5. (In no particular order) Assignments_teacher_info, Grade_thresholds, Letter_grade_chars and  Student_Assignments
+6. Grading Groups
