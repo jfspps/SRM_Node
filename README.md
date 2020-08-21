@@ -1,7 +1,15 @@
 # Student Record Management SRM #
 This project is a skeleton to the frontend of SRM (student record management). The main program, which was initially planned to be developed with Node, Datatables, and MySQL, is now being developed in Spring 5. The Java based repo is [here](https://github.com/jfspps/SRM-Spring).
 
-__Frameworks and tools: NodeJS 13 and MySQL 8__
+__Frameworks and tools:__
++ NodeJS 13
++ Bootstrap 4
++ MySQL 8
++ [Datatables](https://datatables.net/)
+
+Acknowledgement goes to:
++ https://newcodingera.com/datatables-server-side-processing-using-nodejs-mysql/
++ https://www.w3jar.com/node-js-login-and-registration-system-with-express-js-and-mysql/
 
 __Installation__
 
@@ -19,8 +27,7 @@ __Installation__
 
 1. MySQL schema design and preparation
 2. NodeJS connections and simple record extraction via console
-
-3. Teacher authentication and authorisation testing
+3. Guardian authentication and authorisation
 
 Use the currently populated tables to verify students results processing the following:
 
@@ -28,18 +35,12 @@ Use the currently populated tables to verify students results processing the fol
 2. Mapping to percentage uniform marks (PUM)
 3. Letter grade assignment (comparison between two SQL tables)
 
-Construct NodeJS SQL statements and error handling functions.
+### Future work ###
 
-#### Bootstrap 4 interface ####
-
-1. Display pages, showing all columns:
-   a. Personal data and school admin entry page
-   b. Assignment info entry page
-   c. Grade threshold entry page
-2. Display pages, with options to select specific columns
-3. More display pages, showing all columns and then with options (as before), for the processing of students' results.
-		
-#### Parents' portal MySQL notes ####
++ Teacher authentication and authorisation (allow teachers to perform CRUD operations)
++ Error handling functions.
+	
+## Parents' portal MySQL notes ##
 
 Due to MySQL foreign key constraints, the following tables should be populated in the order:
 
