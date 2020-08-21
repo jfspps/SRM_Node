@@ -8,8 +8,8 @@ __Frameworks and tools:__
 + [Datatables](https://datatables.net/)
 
 Acknowledgement goes to:
-+ https://newcodingera.com/datatables-server-side-processing-using-nodejs-mysql/
-+ https://www.w3jar.com/node-js-login-and-registration-system-with-express-js-and-mysql/
++ newcodingera.com/datatables-server-side-processing-using-nodejs-mysql/
++ www.w3jar.com/node-js-login-and-registration-system-with-express-js-and-mysql/
 
 __Installation__
 
